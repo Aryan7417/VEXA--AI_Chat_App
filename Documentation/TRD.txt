@@ -1,0 +1,97 @@
+# VEXA — Technical Requirements Document
+
+### 1. Frontend
+
+* React Native + Expo
+* TypeScript
+* Expo Router for navigation
+* Zustand for state management
+* Axios for API communication
+* Expo SecureStore for JWT/token storage
+
+### 2. Backend
+
+* Node.js + Express.js
+* TypeScript
+* REST API architecture
+* JWT authentication
+* Middleware for authentication and validation
+* Environment variables for secrets
+
+### 3. Database
+
+* MongoDB
+* Mongoose ODM
+
+Collections:
+
+* Users
+* Conversations
+* Messages
+
+### 4. AI Integration
+
+* AI API called through backend
+* API key must never be exposed in mobile app
+* Support streaming responses
+* Handle timeout, API failure and rate-limit errors
+
+### 5. Authentication
+
+```text
+Mobile Number
+      ↓
+   Send OTP
+      ↓
+ Verify OTP
+      ↓
+ Generate JWT
+      ↓
+ SecureStore
+```
+
+### 6. API Requirements
+
+```text
+POST   /api/auth/send-otp
+POST   /api/auth/verify-otp
+
+GET    /api/chats
+POST   /api/chats
+GET    /api/chats/:id
+PATCH  /api/chats/:id
+DELETE /api/chats/:id
+
+POST   /api/chat/message
+```
+
+### 7. Security
+
+* HTTPS in production
+* JWT validation
+* OTP expiry
+* Request validation
+* Rate limiting
+* Secure environment variables
+* Sanitize user input
+* Never expose AI API keys
+
+### 8. Performance
+
+* Streaming AI responses
+* Pagination for chat history
+* Optimized MongoDB queries
+* Loading/error states
+* Network retry handling
+
+### 9. Deployment
+
+**Frontend:** Expo / App Store / Play Store
+
+**Backend:** Cloud server
+
+**Database:** MongoDB Atlas
+
+### 10. Technical Goal
+
+The architecture must be **modular, secure, scalable, and easy to extend** with voice, image, file upload, multiple AI models, and subscriptions in future.

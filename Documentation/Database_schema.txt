@@ -1,0 +1,111 @@
+# VEXA — Database Schema
+
+**Database:** MongoDB
+**ODM:** Mongoose
+
+## 1. Users Collection
+
+```text id="user-schema"
+{
+  _id: ObjectId,
+  phone: String,
+  name: String,
+  profileImage: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Fields
+
+| Field        | Type     | Required | Description           |
+| ------------ | -------- | -------- | --------------------- |
+| _id          | ObjectId | Yes      | Unique user ID        |
+| phone        | String   | Yes      | User mobile number    |
+| name         | String   | Yes      | User name             |
+| profileImage | String   | No       | Profile image URL     |
+| createdAt    | Date     | Yes      | Account creation time |
+| updatedAt    | Date     | Yes      | Last update time      |
+
+**Constraints:** `phone` must be unique.
+
+---
+
+## 2. Conversations Collection
+
+```text id="conversation-schema"
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  title: String,
+  model: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+| Field     | Type     | Required | Description        |
+| --------- | -------- | -------- | ------------------ |
+| _id       | ObjectId | Yes      | Conversation ID    |
+| userId    | ObjectId | Yes      | Reference to Users |
+| title     | String   | Yes      | Chat title         |
+| model     | String   | Yes      | AI model used      |
+| createdAt | Date     | Yes      | Creation time      |
+| updatedAt | Date     | Yes      | Last activity      |
+
+---
+
+## 3. Messages Collection
+
+```text id="message-schema"
+{
+  _id: ObjectId,
+  conversationId: ObjectId,
+  role: String,
+  content: String,
+  createdAt: Date
+}
+```
+
+| Field          | Type     | Required | Description                |
+| -------------- | -------- | -------- | -------------------------- |
+| _id            | ObjectId | Yes      | Message ID                 |
+| conversationId | ObjectId | Yes      | Reference to Conversations |
+| role           | String   | Yes      | user / assistant           |
+| content        | String   | Yes      | Message content            |
+| createdAt      | Date     | Yes      | Message creation time      |
+
+---
+
+## 4. Relationships
+
+```text id="db-relations"
+Users
+  │
+  │ 1 : N
+  ↓
+Conversations
+  │
+  │ 1 : N
+  ↓
+Messages
+```
+
+* One user can have many conversations.
+* One conversation can have many messages.
+* `Conversations.userId` references `Users._id`.
+* `Messages.conversationId` references `Conversations._id`.
+
+## 5. Future Collections
+
+Future features may add:
+
+```text id="future-collections"
+Files
+VoiceMessages
+Subscriptions
+Usage
+Notifications
+```
+
+The database should remain modular so these features can be added without changing the core Users → Conversations → Messages structure.

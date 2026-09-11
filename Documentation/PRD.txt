@@ -1,0 +1,79 @@
+# VEXA — Product Requirements
+
+**Product:** VEXA – Your AI Companion
+**Platform:** Android 
+**Type:** AI Chat App
+
+### 1. Objective
+
+Build a modern AI chat application where users can communicate with AI, save conversations, and manage their account.
+
+### 2. Authentication
+
+* Mobile number login
+* OTP verification
+* JWT authentication
+* Create profile
+* Logout
+
+### 3. Core Features
+
+* New AI chat
+* Send/receive messages
+* AI streaming response
+* Markdown & code support
+* Copy/regenerate response
+* Chat history
+* Rename/delete chats
+* Search chats
+* AI model selection
+
+### 4. Pages
+
+* Splash
+* Onboarding
+* Phone Login
+* OTP
+* Create Profile
+* Home
+* Chat
+* Chats
+* Search
+* Profile
+* Settings
+
+### 5. Tech Stack
+
+**Frontend:** React Native, Expo, TypeScript, Expo Router, NativeWind, Zustand, Axios
+
+**Backend:** Node.js, Express.js, TypeScript
+
+**Database:** MongoDB + Mongoose
+
+**Authentication:** OTP + JWT
+
+**AI:** AI Provider API
+
+### 6. Architecture
+
+```text
+React Native
+     ↓
+Node + Express
+     ↓
+AI API
+     ↓
+MongoDB
+```
+
+### 7. Security
+
+* API keys only on backend
+* Secure token storage
+* OTP expiry
+* Input validation
+* Rate limiting
+
+### 8. MVP Goal
+
+User can **login → create profile → start chat → receive AI response → save conversation → view chat history → logout**.
