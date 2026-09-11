@@ -1,200 +1,772 @@
-import { useState } from "react"
-import { AppState, Screen, Conversation, Model } from "../../types"
-import BottomNav from "../components/BottomNav"
+
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+
+import { AppState, Screen, Model } from "../../types";
+import BottomNav from "../components/BottomNav";
 
 interface Props {
-  state: AppState
-  onNavigate: (screen: Screen) => void
-  onNewChat: (message: string, model: Model) => void
+  state: AppState;
+  onNavigate: (screen: Screen) => void;
+  onNewChat: (message: string, model: Model) => void;
 }
 
 const suggestions = [
-  { emoji: "💡", text: "Explain quantum computing simply", color: "#7C3AED" },
-  { emoji: "🐍", text: "Write a Python web scraper", color: "#6366F1" },
-  { emoji: "✍️", text: "Write a product launch email", color: "#A855F7" },
-  { emoji: "🎯", text: "Help plan my weekly goals", color: "#8B5CF6" },
-]
+  {
+    emoji: "💡",
+    text: "Explain quantum computing simply",
+    color: "#7C3AED",
+  },
+  {
+    emoji: "🐍",
+    text: "Write a Python web scraper",
+    color: "#6366F1",
+  },
+  {
+    emoji: "✍️",
+    text: "Write a product launch email",
+    color: "#A855F7",
+  },
+  {
+    emoji: "🎯",
+    text: "Help plan my weekly goals",
+    color: "#8B5CF6",
+  },
+];
 
-const modelBadges: Record<Model, { label: string; color: string; icon: string }> = {
-  fast: { label: "Flash", color: "#F59E0B", icon: "⚡" },
-  smart: { label: "Smart", color: "#A855F7", icon: "🧠" },
-  code: { label: "Code", color: "#10B981", icon: "💻" }
-}
+const modelBadges: Record<
+  Model,
+  {
+    label: string;
+    color: string;
+    icon: string;
+  }
+> = {
+  fast: {
+    label: "Flash",
+    color: "#F59E0B",
+    icon: "⚡",
+  },
+  smart: {
+    label: "Smart",
+    color: "#A855F7",
+    icon: "🧠",
+  },
+  code: {
+    label: "Code",
+    color: "#10B981",
+    icon: "💻",
+  },
+};
 
-export default function HomeScreen({ state, onNavigate, onNewChat }: Props) {
-  const [message, setMessage] = useState("")
-  const [showAttach, setShowAttach] = useState(false)
+export default function HomeScreen({
+  state,
+  onNavigate,
+  onNewChat,
+}: Props) {
+  const [message, setMessage] = useState("");
 
-  const modelInfo = modelBadges[state.model]
+  const modelInfo = modelBadges[state.model];
 
   const handleSend = () => {
-    if (!message.trim()) return
-    onNewChat(message.trim(), state.model)
-    setMessage("")
-  }
+    const trimmedMessage = message.trim();
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
+    if (!trimmedMessage) return;
+
+    onNewChat(trimmedMessage, state.model);
+    setMessage("");
+  };
+
+  const hour = new Date().getHours();
+
+  const greeting =
+    hour < 12
+      ? "Good morning"
+      : hour < 17
+      ? "Good afternoon"
+      : "Good evening";
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
-      {/* Header */}
-      <div className="px-5 pt-16 pb-4 flex items-center justify-between">
-        <div>
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 13, color: "#8892B0", fontWeight: 400 }}>
-            {greeting}, {state.userName} 👋
-          </p>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "#EEF0FF" }}>
+    <View style={styles.container}>
+
+      {/* Top glow */}
+      <View style={styles.topGlow} />
+
+      {/* ================= HEADER ================= */}
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.greeting}>
+            {greeting}, {state.userName || "there"} 👋
+          </Text>
+
+          <Text style={styles.heading}>
             How can I help you?
-          </h1>
-        </div>
-        <button onClick={() => onNavigate("profile")}
-          className="rounded-2xl flex items-center justify-center"
-          style={{ width: 40, height: 40, background: "linear-gradient(135deg, #7C3AED, #6366F1)", boxShadow: "0 0 14px rgba(124,58,237,0.4)" }}>
-          <span style={{ fontSize: 18 }}>🧑</span>
-        </button>
-      </div>
+          </Text>
+        </View>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-5 pb-28" style={{ scrollbarWidth: "none" }}>
-        {/* VEXA greeting card */}
-        <div className="rounded-3xl p-5 mb-6 relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, rgba(124,58,237,0.18) 0%, rgba(99,102,241,0.1) 100%)",
-            border: "1px solid rgba(124,58,237,0.25)"
-          }}>
-          <div className="absolute -right-6 -top-6 rounded-full opacity-30"
-            style={{ width: 100, height: 100, background: "radial-gradient(ellipse, #7C3AED, transparent)", filter: "blur(20px)" }} />
-          <div className="flex items-center gap-3 mb-3">
-            <div className="rounded-xl flex items-center justify-center"
-              style={{ width: 36, height: 36, background: "linear-gradient(135deg, #7C3AED, #6D28D9)" }}>
-              <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
-                <path d="M8 12L24 38L40 12" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div>
-              <div style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 700, color: "#EEF0FF" }}>VEXA</div>
-              <div style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#A855F7" }}>● Online</div>
-            </div>
-          </div>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#CBD5E1", lineHeight: 1.6 }}>
-            Hello, {state.userName}! I'm VEXA, your AI companion. Ask me anything — from coding help to creative writing, I'm here to assist.
-          </p>
-        </div>
+        <Pressable
+          onPress={() => onNavigate("profile")}
+          style={styles.profileButton}
+        >
+          <Text style={styles.profileEmoji}>🧑</Text>
+        </Pressable>
+      </View>
 
-        {/* Model selector */}
-        <div className="flex items-center gap-2 mb-5">
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 12, color: "#8892B0", fontWeight: 500 }}>Model:</span>
-          <button onClick={() => onNavigate("model-selection")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200"
-            style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
-            <span style={{ fontSize: 12 }}>{modelInfo.icon}</span>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: modelInfo.color }}>{modelInfo.label}</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#8892B0" strokeWidth="2" strokeLinecap="round"/></svg>
-          </button>
-        </div>
+      {/* ================= CONTENT ================= */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
 
-        {/* Suggestions */}
-        <div className="mb-4">
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", marginBottom: 12 }}>
+        {/* ================= VEXA CARD ================= */}
+        <View style={styles.vexaCard}>
+
+          {/* Decorative glow */}
+          <View style={styles.cardGlow} />
+
+          <View style={styles.vexaHeader}>
+
+            <View style={styles.vexaLogo}>
+              <Text style={styles.vexaLogoText}>V</Text>
+            </View>
+
+            <View>
+              <Text style={styles.vexaTitle}>
+                VEXA
+              </Text>
+
+              <Text style={styles.onlineText}>
+                ● Online
+              </Text>
+            </View>
+
+          </View>
+
+          <Text style={styles.vexaDescription}>
+            Hello, {state.userName || "there"}! I'm VEXA,
+            your AI companion. Ask me anything — from
+            coding help to creative writing, I'm here to assist.
+          </Text>
+        </View>
+
+        {/* ================= MODEL SELECTOR ================= */}
+        <View style={styles.modelRow}>
+
+          <Text style={styles.modelLabel}>
+            Model:
+          </Text>
+
+          <Pressable
+            onPress={() => onNavigate("model-selection")}
+            style={styles.modelButton}
+          >
+            <Text style={styles.modelIcon}>
+              {modelInfo.icon}
+            </Text>
+
+            <Text
+              style={[
+                styles.modelName,
+                { color: modelInfo.color },
+              ]}
+            >
+              {modelInfo.label}
+            </Text>
+
+            <Text style={styles.arrowDown}>
+              ▼
+            </Text>
+          </Pressable>
+
+        </View>
+
+        {/* ================= SUGGESTIONS ================= */}
+        <View style={styles.section}>
+
+          <Text style={styles.sectionTitle}>
             SUGGESTIONS
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {suggestions.map((s, i) => (
-              <button key={i} onClick={() => { setMessage(s.text) }}
-                className="p-3.5 rounded-2xl text-left transition-all duration-200 active:scale-95"
-                style={{
-                  background: "rgba(13,18,32,0.8)", border: "1px solid rgba(255,255,255,0.06)",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.3)"
-                }}
-                onMouseOver={e => e.currentTarget.style.border = `1px solid ${s.color}40`}
-                onMouseOut={e => e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)"}>
-                <span style={{ fontSize: 20 }}>{s.emoji}</span>
-                <p className="mt-2" style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 500, color: "#CBD5E1", lineHeight: 1.4 }}>
-                  {s.text}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
+          </Text>
 
-        {/* Recent chats */}
+          <View style={styles.suggestionGrid}>
+
+            {suggestions.map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => setMessage(item.text)}
+                style={({ pressed }) => [
+                  styles.suggestionCard,
+                  pressed && styles.pressed,
+                  {
+                    borderColor: pressed
+                      ? item.color
+                      : "rgba(255,255,255,0.06)",
+                  },
+                ]}
+              >
+                <Text style={styles.suggestionEmoji}>
+                  {item.emoji}
+                </Text>
+
+                <Text style={styles.suggestionText}>
+                  {item.text}
+                </Text>
+              </Pressable>
+            ))}
+
+          </View>
+        </View>
+
+        {/* ================= RECENT CHATS ================= */}
         {state.conversations.length > 0 && (
-          <div>
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", marginBottom: 12 }}>
+          <View style={styles.section}>
+
+            <Text style={styles.sectionTitle}>
               RECENT
-            </p>
-            {state.conversations.slice(0, 3).map(conv => (
-              <button key={conv.id} onClick={() => onNavigate("chat")}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl mb-2 text-left transition-all duration-150"
-                style={{ background: "rgba(13,18,32,0.6)", border: "1px solid rgba(255,255,255,0.05)" }}
-                onMouseOver={e => e.currentTarget.style.background = "rgba(124,58,237,0.08)"}
-                onMouseOut={e => e.currentTarget.style.background = "rgba(13,18,32,0.6)"}>
-                <div className="rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ width: 36, height: 36, background: "rgba(124,58,237,0.15)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="#A855F7" strokeWidth="1.8" fill="none"/>
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600, color: "#EEF0FF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {conv.title}
-                  </p>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#8892B0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {conv.preview}
-                  </p>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#4A5568" strokeWidth="2" strokeLinecap="round"/></svg>
-              </button>
-            ))}
-          </div>
+            </Text>
+
+            {state.conversations
+              .slice(0, 3)
+              .map((conversation) => (
+                <Pressable
+                  key={conversation.id}
+                  onPress={() => {
+                    onNavigate("chat");
+                  }}
+                  style={({ pressed }) => [
+                    styles.chatCard,
+                    pressed && {
+                      backgroundColor:
+                        "rgba(124,58,237,0.08)",
+                    },
+                  ]}
+                >
+
+                  {/* Chat icon */}
+                  <View style={styles.chatIcon}>
+                    <Text style={styles.chatIconText}>
+                      💬
+                    </Text>
+                  </View>
+
+                  {/* Chat information */}
+                  <View style={styles.chatInfo}>
+
+                    <Text
+                      style={styles.chatTitle}
+                      numberOfLines={1}
+                    >
+                      {conversation.title}
+                    </Text>
+
+                    <Text
+                      style={styles.chatPreview}
+                      numberOfLines={1}
+                    >
+                      {conversation.preview}
+                    </Text>
+
+                  </View>
+
+                  <Text style={styles.chatArrow}>
+                    ›
+                  </Text>
+
+                </Pressable>
+              ))}
+
+          </View>
         )}
-      </div>
 
-      {/* Chat composer */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 pb-24"
-        style={{ background: "linear-gradient(to top, #060912 60%, transparent 100%)" }}>
-        <div className="flex items-end gap-2">
-          <div className="flex-1 rounded-3xl overflow-hidden"
-            style={{ background: "rgba(13,18,32,0.9)", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
-            <textarea value={message} onChange={e => setMessage(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+        {/* Bottom space so composer doesn't cover content */}
+        <View style={{ height: 150 }} />
+
+      </ScrollView>
+
+      {/* ================= CHAT COMPOSER ================= */}
+      <View style={styles.composerContainer}>
+
+        <View style={styles.composerRow}>
+
+          {/* Input container */}
+          <View style={styles.inputContainer}>
+
+            <TextInput
+              value={message}
+              onChangeText={setMessage}
               placeholder="Ask VEXA anything..."
-              rows={1}
-              className="w-full px-4 pt-3.5 pb-2 outline-none resize-none bg-transparent"
-              style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#EEF0FF", maxHeight: 100 }} />
-            <div className="flex items-center gap-2 px-3 pb-2.5">
-              <button onClick={() => setShowAttach(!showAttach)}
-                className="p-1.5 rounded-xl transition-colors duration-150"
-                style={{ color: "#8892B0" }}
-                onMouseOver={e => e.currentTarget.style.color = "#A855F7"}
-                onMouseOut={e => e.currentTarget.style.color = "#8892B0"}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-              </button>
-              <button className="p-1.5 rounded-xl transition-colors duration-150"
-                style={{ color: "#8892B0" }}
-                onMouseOver={e => e.currentTarget.style.color = "#A855F7"}
-                onMouseOut={e => e.currentTarget.style.color = "#8892B0"}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" stroke="currentColor" strokeWidth="1.8"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-              </button>
-            </div>
-          </div>
+              placeholderTextColor="#4A5568"
+              multiline
+              maxLength={2000}
+              style={styles.input}
+            />
 
-          <button onClick={handleSend}
-            className="rounded-2xl flex items-center justify-center transition-all duration-200 flex-shrink-0"
-            style={{
-              width: 48, height: 48,
-              background: message ? "linear-gradient(135deg, #7C3AED, #6D28D9)" : "rgba(124,58,237,0.2)",
-              boxShadow: message ? "0 0 20px rgba(124,58,237,0.5)" : "none"
-            }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+            {/* Composer actions */}
+            <View style={styles.actionRow}>
 
-      <BottomNav active="home" onNavigate={onNavigate} />
-    </div>
-  )
+              {/* Attachment */}
+              <Pressable
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionIcon}>
+                  📎
+                </Text>
+              </Pressable>
+
+              {/* Microphone */}
+              <Pressable
+                style={styles.actionButton}
+              >
+                <Text style={styles.actionIcon}>
+                  🎙️
+                </Text>
+              </Pressable>
+
+            </View>
+
+          </View>
+
+          {/* Send */}
+          <Pressable
+            onPress={handleSend}
+            disabled={!message.trim()}
+            style={({ pressed }) => [
+              styles.sendButton,
+              message.trim()
+                ? styles.sendButtonActive
+                : styles.sendButtonDisabled,
+              pressed && message.trim()
+                ? styles.sendPressed
+                : null,
+            ]}
+          >
+            <Text style={styles.sendIcon}>
+              ➤
+            </Text>
+          </Pressable>
+
+        </View>
+
+      </View>
+
+      {/* ================= BOTTOM NAV ================= */}
+      <BottomNav
+        active="home"
+        onNavigate={onNavigate}
+      />
+
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: "#060912",
+  },
+
+  /* ================= TOP GLOW ================= */
+
+  topGlow: {
+    position: "absolute",
+    top: -100,
+    left: "50%",
+    width: 300,
+    height: 220,
+    marginLeft: -150,
+    borderRadius: 150,
+    backgroundColor: "rgba(124,58,237,0.12)",
+  },
+
+  /* ================= HEADER ================= */
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 55,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  headerText: {
+    flex: 1,
+  },
+
+  greeting: {
+    color: "#8892B0",
+    fontSize: 13,
+    fontWeight: "400",
+    marginBottom: 5,
+  },
+
+  heading: {
+    color: "#EEF0FF",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+
+  profileButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#6D28D9",
+    borderWidth: 1,
+    borderColor: "rgba(168,85,247,0.35)",
+  },
+
+  profileEmoji: {
+    fontSize: 20,
+  },
+
+  /* ================= SCROLL ================= */
+
+  scroll: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+
+  /* ================= VEXA CARD ================= */
+
+  vexaCard: {
+    minHeight: 170,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    overflow: "hidden",
+
+    backgroundColor: "rgba(40,24,80,0.65)",
+
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+  },
+
+  cardGlow: {
+    position: "absolute",
+    right: -40,
+    top: -40,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(124,58,237,0.12)",
+  },
+
+  vexaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  vexaLogo: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+
+    backgroundColor: "#6D28D9",
+  },
+
+  vexaLogoText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "800",
+  },
+
+  vexaTitle: {
+    color: "#EEF0FF",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  onlineText: {
+    color: "#A855F7",
+    fontSize: 11,
+    marginTop: 2,
+  },
+
+  vexaDescription: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    lineHeight: 22,
+  },
+
+  /* ================= MODEL ================= */
+
+  modelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  modelLabel: {
+    color: "#8892B0",
+    fontSize: 12,
+    fontWeight: "500",
+    marginRight: 8,
+  },
+
+  modelButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+
+    backgroundColor: "rgba(124,58,237,0.12)",
+
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+  },
+
+  modelIcon: {
+    fontSize: 12,
+    marginRight: 5,
+  },
+
+  modelName: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  arrowDown: {
+    color: "#8892B0",
+    fontSize: 9,
+    marginLeft: 7,
+  },
+
+  /* ================= SECTIONS ================= */
+
+  section: {
+    marginBottom: 20,
+  },
+
+  sectionTitle: {
+    color: "#8892B0",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+
+  /* ================= SUGGESTIONS ================= */
+
+  suggestionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  suggestionCard: {
+    width: "48%",
+    minHeight: 115,
+
+    padding: 14,
+    marginBottom: 10,
+
+    borderRadius: 18,
+
+    backgroundColor: "rgba(13,18,32,0.85)",
+
+    borderWidth: 1,
+  },
+
+  suggestionEmoji: {
+    fontSize: 21,
+    marginBottom: 10,
+  },
+
+  suggestionText: {
+    color: "#CBD5E1",
+    fontSize: 12,
+    fontWeight: "500",
+    lineHeight: 17,
+  },
+
+  pressed: {
+    transform: [{ scale: 0.97 }],
+  },
+
+  /* ================= RECENT CHATS ================= */
+
+  chatCard: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    minHeight: 68,
+
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+
+    marginBottom: 8,
+
+    borderRadius: 16,
+
+    backgroundColor: "rgba(13,18,32,0.65)",
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+
+  chatIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: "rgba(124,58,237,0.15)",
+
+    marginRight: 12,
+  },
+
+  chatIconText: {
+    fontSize: 16,
+  },
+
+  chatInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  chatTitle: {
+    color: "#EEF0FF",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+
+  chatPreview: {
+    color: "#8892B0",
+    fontSize: 12,
+  },
+
+  chatArrow: {
+    color: "#4A5568",
+    fontSize: 28,
+    fontWeight: "300",
+    marginLeft: 8,
+  },
+
+  /* ================= COMPOSER ================= */
+
+  composerContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 65,
+
+    paddingHorizontal: 14,
+    paddingTop: 18,
+    paddingBottom: 10,
+
+    backgroundColor: "#060912",
+  },
+
+  composerRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+
+  inputContainer: {
+    flex: 1,
+
+    minHeight: 58,
+
+    borderRadius: 22,
+
+    backgroundColor: "rgba(13,18,32,0.95)",
+
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+
+    overflow: "hidden",
+
+    marginRight: 8,
+  },
+
+  input: {
+    minHeight: 42,
+    maxHeight: 90,
+
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+
+    color: "#EEF0FF",
+
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingHorizontal: 8,
+    paddingBottom: 5,
+  },
+
+  actionButton: {
+    width: 32,
+    height: 28,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginRight: 2,
+  },
+
+  actionIcon: {
+    fontSize: 17,
+    opacity: 0.65,
+  },
+
+  /* ================= SEND BUTTON ================= */
+
+  sendButton: {
+    width: 50,
+    height: 50,
+
+    borderRadius: 17,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  sendButtonActive: {
+    backgroundColor: "#6D28D9",
+  },
+
+  sendButtonDisabled: {
+    backgroundColor: "rgba(124,58,237,0.2)",
+  },
+
+  sendPressed: {
+    transform: [{ scale: 0.94 }],
+  },
+
+  sendIcon: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "700",
+  },
+
+});
+
