@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { AppState, Screen } from "../types"
+import { AppState, Screen } from "../../types"
 import BottomNav from "../components/BottomNav"
 
 interface Props {
