@@ -1,5 +1,14 @@
+import React from "react"
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+} from "react-native"
+
 import { AppState, Screen } from "../../types"
-import BottomNav from "../components/BottomNav"
 
 interface Props {
   state: AppState
@@ -8,121 +17,574 @@ interface Props {
 }
 
 const stats = [
-  { label: "Conversations", getValue: (s: AppState) => s.conversations.length.toString() },
-  { label: "Messages", getValue: (s: AppState) => s.conversations.reduce((a, c) => a + c.messages.length, 0).toString() },
-  { label: "Days Active", getValue: () => "1" },
+  {
+    label: "Conversations",
+    getValue: (s: AppState) => s.conversations.length.toString(),
+  },
+  {
+    label: "Messages",
+    getValue: (s: AppState) =>
+      s.conversations
+        .reduce((total, conversation) => total + conversation.messages.length, 0)
+        .toString(),
+  },
+  {
+    label: "Days Active",
+    getValue: () => "1",
+  },
 ]
 
-export default function ProfileScreen({ state, onNavigate, onLogout }: Props) {
+export default function ProfileScreen({
+  state,
+  onNavigate,
+  onLogout,
+}: Props) {
+  const menuItems = [
+    {
+      icon: "👤",
+      label: "Edit Profile",
+      sub: "Update name and avatar",
+      action: () => { },
+    },
+    {
+      icon: "🤖",
+      label: "AI Model",
+      sub: `Currently: ${state.model}`,
+      action: () => onNavigate("model-selection"),
+    },
+    {
+      icon: "🔔",
+      label: "Notifications",
+      sub: state.notifications ? "Enabled" : "Disabled",
+      action: () => onNavigate("settings"),
+    },
+    {
+      icon: "🔒",
+      label: "Privacy & Security",
+      sub: "Manage your data",
+      action: () => { },
+    },
+    {
+      icon: "❓",
+      label: "Help & Support",
+      sub: "FAQs and contact us",
+      action: () => { },
+    },
+    {
+      icon: "⭐",
+      label: "Rate VEXA",
+      sub: "Share your feedback",
+      action: () => { },
+    },
+  ]
+
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
-      {/* Top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width: 400, height: 300, background: "radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)", filter: "blur(40px)" }} />
+    <SafeAreaView style={styles.container}>
+      {/* Top Glow */}
+      <View style={styles.glow} />
 
       {/* Header */}
-      <div className="px-5 pt-14 pb-2 flex items-center justify-between">
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "#EEF0FF" }}>Profile</h1>
-        <button onClick={() => onNavigate("settings")}
-          className="p-2 rounded-xl"
-          style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.2)" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="#A855F7" strokeWidth="1.8"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
-              stroke="#A855F7" strokeWidth="1.8"/>
-          </svg>
-        </button>
-      </div>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profile</Text>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 pb-28" style={{ scrollbarWidth: "none" }}>
-        {/* Avatar + name */}
-        <div className="flex flex-col items-center py-8">
-          <div className="relative mb-4">
-            <div className="rounded-3xl flex items-center justify-center"
-              style={{
-                width: 90, height: 90,
-                background: "linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)",
-                boxShadow: "0 0 30px rgba(124,58,237,0.5), 0 0 60px rgba(124,58,237,0.2)"
-              }}>
-              <span style={{ fontSize: 40 }}>🧑</span>
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
-              style={{ background: "#10B981", border: "2px solid #060912" }}>
-              <div className="w-2 h-2 rounded-full bg-white" />
-            </div>
-          </div>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "#EEF0FF" }}>
-            {state.userName}
-          </h2>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#8892B0", marginTop: 4 }}>
+        <TouchableOpacity
+          onPress={() => onNavigate("settings")}
+          style={styles.settingsButton}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.settingsIcon}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Avatar + Name */}
+        <View style={styles.profileSection}>
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarEmoji}>🧑</Text>
+            </View>
+
+            {/* Online indicator */}
+            <View style={styles.onlineOuter}>
+              <View style={styles.onlineDot} />
+            </View>
+          </View>
+
+          <Text style={styles.userName}>
+            {state.userName || "User"}
+          </Text>
+
+          <Text style={styles.phone}>
             {state.phone || "+1 555 0100"}
-          </p>
-          <div className="mt-2 px-3 py-1 rounded-full"
-            style={{ background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.25)" }}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 11, fontWeight: 600, color: "#A855F7" }}>
-              VEXA Pro
-            </span>
-          </div>
-        </div>
+          </Text>
+
+          <View style={styles.proBadge}>
+            <Text style={styles.proText}>VEXA Pro</Text>
+          </View>
+        </View>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {stats.map(stat => (
-            <div key={stat.label} className="rounded-2xl p-4 text-center"
-              style={{ background: "rgba(13,18,32,0.8)", border: "1px solid rgba(124,58,237,0.15)" }}>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "#EEF0FF" }}>
+        <View style={styles.statsContainer}>
+          {stats.map((stat) => (
+            <View key={stat.label} style={styles.statCard}>
+              <Text style={styles.statValue}>
                 {stat.getValue(state)}
-              </p>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#8892B0", marginTop: 2 }}>
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
+              </Text>
 
-        {/* Menu items */}
-        {[
-          { icon: "👤", label: "Edit Profile", sub: "Update name and avatar", action: () => {} },
-          { icon: "🤖", label: "AI Model", sub: `Currently: ${state.model}`, action: () => onNavigate("model-selection") },
-          { icon: "🔔", label: "Notifications", sub: state.notifications ? "Enabled" : "Disabled", action: () => onNavigate("settings") },
-          { icon: "🔒", label: "Privacy & Security", sub: "Manage your data", action: () => {} },
-          { icon: "❓", label: "Help & Support", sub: "FAQs and contact us", action: () => {} },
-          { icon: "⭐", label: "Rate VEXA", sub: "Share your feedback", action: () => {} },
-        ].map((item, i) => (
-          <button key={i} onClick={item.action}
-            className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl mb-2 text-left transition-all duration-150"
-            style={{ background: "rgba(13,18,32,0.6)", border: "1px solid rgba(255,255,255,0.05)" }}
-            onMouseOver={e => e.currentTarget.style.background = "rgba(124,58,237,0.08)"}
-            onMouseOut={e => e.currentTarget.style.background = "rgba(13,18,32,0.6)"}>
-            <div className="rounded-xl flex items-center justify-center"
-              style={{ width: 40, height: 40, background: "rgba(124,58,237,0.1)", fontSize: 18 }}>
-              {item.icon}
-            </div>
-            <div className="flex-1">
-              <p style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 600, color: "#EEF0FF" }}>{item.label}</p>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#8892B0" }}>{item.sub}</p>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#4A5568" strokeWidth="2" strokeLinecap="round"/></svg>
-          </button>
-        ))}
+              <Text style={styles.statLabel}>
+                {stat.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={item.action}
+              activeOpacity={0.7}
+              style={styles.menuItem}
+            >
+              {/* Icon */}
+              <View style={styles.menuIconContainer}>
+                <Text style={styles.menuIcon}>
+                  {item.icon}
+                </Text>
+              </View>
+
+              {/* Text */}
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.menuTitle}>
+                  {item.label}
+                </Text>
+
+                <Text style={styles.menuSubtitle}>
+                  {item.sub}
+                </Text>
+              </View>
+
+              {/* Arrow */}
+              <Text style={styles.arrow}>
+                ›
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {/* Logout */}
-        <button onClick={onLogout}
-          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl mt-2"
-          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#EF4444" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 600 }}>Sign Out</span>
-        </button>
+        <TouchableOpacity
+          onPress={onLogout}
+          activeOpacity={0.7}
+          style={styles.logoutButton}
+        >
+          <Text style={styles.logoutIcon}>↪</Text>
 
-        <p className="text-center mt-4" style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "#4A5568" }}>
+          <Text style={styles.logoutText}>
+            Sign Out
+          </Text>
+        </TouchableOpacity>
+
+        {/* Footer */}
+        <Text style={styles.footer}>
           VEXA v1.0.0 · Made with ♥
-        </p>
-      </div>
+        </Text>
+      </ScrollView>
 
-      <BottomNav active="settings" onNavigate={onNavigate} />
-    </div>
+      {/* Bottom Navigation */}
+      <View style={styles.bottomNav}>
+        <BottomNavItem
+          label="Home"
+          icon="⌂"
+          onPress={() => onNavigate("home")}
+        />
+
+        <BottomNavItem
+          label="Chats"
+          icon="💬"
+          onPress={() => onNavigate("chats")}
+        />
+
+        <BottomNavItem
+          label="Search"
+          icon="⌕"
+          onPress={() => onNavigate("search")}
+        />
+
+        <BottomNavItem
+          label="Settings"
+          icon="⚙"
+          active
+          onPress={() => onNavigate("settings")}
+        />
+      </View>
+    </SafeAreaView>
   )
 }
+
+/* -------------------------------- */
+/* Bottom Navigation Item            */
+/* -------------------------------- */
+
+interface BottomNavItemProps {
+  label: string
+  icon: string
+  active?: boolean
+  onPress: () => void
+}
+
+function BottomNavItem({
+  label,
+  icon,
+  active = false,
+  onPress,
+}: BottomNavItemProps) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={styles.navItem}
+    >
+      <Text
+        style={[
+          styles.navIcon,
+          active && styles.navIconActive,
+        ]}
+      >
+        {icon}
+      </Text>
+
+      <Text
+        style={[
+          styles.navLabel,
+          active && styles.navLabelActive,
+        ]}
+      >
+        {label}
+      </Text>
+
+      {active && <View style={styles.activeIndicator} />}
+    </TouchableOpacity>
+  )
+}
+
+/* -------------------------------- */
+/* Styles                            */
+/* -------------------------------- */
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#060912",
+  },
+
+  glow: {
+    position: "absolute",
+    top: -80,
+    alignSelf: "center",
+    width: 400,
+    height: 300,
+    borderRadius: 200,
+    backgroundColor: "rgba(124,58,237,0.08)",
+  },
+
+  /* Header */
+
+  header: {
+    height: 60,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#EEF0FF",
+  },
+
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(124,58,237,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.2)",
+  },
+
+  settingsIcon: {
+    fontSize: 18,
+  },
+
+  /* Scroll */
+
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 110,
+  },
+
+  /* Profile */
+
+  profileSection: {
+    alignItems: "center",
+    paddingTop: 28,
+    paddingBottom: 28,
+  },
+
+  avatarWrapper: {
+    position: "relative",
+    marginBottom: 16,
+  },
+
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#7C3AED",
+    shadowColor: "#7C3AED",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.6,
+    shadowRadius: 25,
+    elevation: 15,
+  },
+
+  avatarEmoji: {
+    fontSize: 40,
+  },
+
+  onlineOuter: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 25,
+    height: 25,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#10B981",
+    borderWidth: 2,
+    borderColor: "#060912",
+  },
+
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#FFFFFF",
+  },
+
+  userName: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#EEF0FF",
+  },
+
+  phone: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#8892B0",
+  },
+
+  proBadge: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: "rgba(124,58,237,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+  },
+
+  proText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#A855F7",
+  },
+
+  /* Stats */
+
+  statsContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 20,
+  },
+
+  statCard: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 5,
+    alignItems: "center",
+    borderRadius: 16,
+    backgroundColor: "rgba(13,18,32,0.8)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.15)",
+  },
+
+  statValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#EEF0FF",
+  },
+
+  statLabel: {
+    marginTop: 2,
+    fontSize: 10,
+    color: "#8892B0",
+    textAlign: "center",
+  },
+
+  /* Menu */
+
+  menuContainer: {
+    marginBottom: 8,
+  },
+
+  menuItem: {
+    minHeight: 72,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    backgroundColor: "rgba(13,18,32,0.6)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(124,58,237,0.1)",
+  },
+
+  menuIcon: {
+    fontSize: 18,
+  },
+
+  menuTextContainer: {
+    flex: 1,
+    marginLeft: 14,
+  },
+
+  menuTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#EEF0FF",
+  },
+
+  menuSubtitle: {
+    marginTop: 3,
+    fontSize: 12,
+    color: "#8892B0",
+  },
+
+  arrow: {
+    fontSize: 26,
+    fontWeight: "300",
+    color: "#4A5568",
+    marginLeft: 8,
+  },
+
+  /* Logout */
+
+  logoutButton: {
+    height: 56,
+    marginTop: 8,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(239,68,68,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.2)",
+  },
+
+  logoutIcon: {
+    fontSize: 22,
+    color: "#EF4444",
+    marginRight: 8,
+  },
+
+  logoutText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#EF4444",
+  },
+
+  footer: {
+    textAlign: "center",
+    marginTop: 16,
+    fontSize: 11,
+    color: "#4A5568",
+  },
+
+  /* Bottom Navigation */
+
+  bottomNav: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 82,
+    paddingBottom: 12,
+    paddingTop: 8,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#060912",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(124,58,237,0.15)",
+  },
+
+  navItem: {
+    minWidth: 60,
+    height: 62,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  navIcon: {
+    fontSize: 22,
+    color: "#4A5568",
+  },
+
+  navIconActive: {
+    color: "#A855F7",
+  },
+
+  navLabel: {
+    marginTop: 3,
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#4A5568",
+  },
+
+  navLabelActive: {
+    color: "#A855F7",
+  },
+
+  activeIndicator: {
+    position: "absolute",
+    bottom: 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#A855F7",
+  },
+})

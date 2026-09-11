@@ -17,7 +17,7 @@ import OTPScreen from "./screen/OTPScreen";
 import CreateProfileScreen from "./screen/CreateProfileScreen";
 import HomeScreen from "./screen/HomeScreen";
 import ChatScreen from "./screen/ChatScreen";
-import ChatsScreen from "./screen/chatsScreen";
+import ChatsScreen from "./screen/ChatScreen";
 import SearchScreen from "./screen/SearchScreen";
 import ProfileScreen from "./screen/ProfileScreen";
 import SettingsScreen from "./screen/SettingScreen";

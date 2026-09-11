@@ -1,153 +1,472 @@
-import { useState } from "react"
-import { AppState, Screen } from "../../types"
-import BottomNav from "../components/BottomNav"
+
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import { AppState, Screen } from "../../types";
+import BottomNav from "../components/BottomNav";
 
 interface Props {
-  state: AppState
-  onNavigate: (screen: Screen) => void
-  onOpenChat: (id: string) => void
+  state: AppState;
+  onNavigate: (screen: Screen) => void;
+  onOpenChat: (id: string) => void;
 }
 
-export default function SearchScreen({ state, onNavigate, onOpenChat }: Props) {
-  const [query, setQuery] = useState("")
+export default function SearchScreen({
+  state,
+  onNavigate,
+  onOpenChat,
+}: Props) {
+  const [query, setQuery] = useState("");
 
-  const allMessages = state.conversations.flatMap(conv =>
-    conv.messages.map(msg => ({ ...msg, convTitle: conv.title, convId: conv.id }))
-  )
+  const allMessages = state.conversations.flatMap((conv) =>
+    conv.messages.map((msg) => ({
+      ...msg,
+      convTitle: conv.title,
+      convId: conv.id,
+    }))
+  );
 
-  const results = query.trim().length > 1
-    ? allMessages.filter(m => m.content.toLowerCase().includes(query.toLowerCase()))
-    : []
+  const results =
+    query.trim().length > 1
+      ? allMessages.filter((m) =>
+        m.content.toLowerCase().includes(query.toLowerCase())
+      )
+      : [];
 
   const highlight = (text: string, q: string) => {
-    if (!q) return text
-    const idx = text.toLowerCase().indexOf(q.toLowerCase())
-    if (idx === -1) return text.slice(0, 80) + (text.length > 80 ? "..." : "")
-    const start = Math.max(0, idx - 30)
-    const end = Math.min(text.length, idx + q.length + 50)
-    const before = (start > 0 ? "..." : "") + text.slice(start, idx)
-    const match = text.slice(idx, idx + q.length)
-    const after = text.slice(idx + q.length, end) + (end < text.length ? "..." : "")
-    return { before, match, after }
-  }
+    if (!q) return text;
 
-  const recentTopics = ["Python", "React hooks", "Machine learning", "Writing tips", "SQL queries"]
+    const idx = text.toLowerCase().indexOf(q.toLowerCase());
+
+    if (idx === -1) {
+      return {
+        before: "",
+        match: "",
+        after: text.slice(0, 80) + (text.length > 80 ? "..." : ""),
+      };
+    }
+
+    const start = Math.max(0, idx - 30);
+    const end = Math.min(text.length, idx + q.length + 50);
+
+    const before =
+      (start > 0 ? "..." : "") + text.slice(start, idx);
+
+    const match = text.slice(idx, idx + q.length);
+
+    const after =
+      text.slice(idx + q.length, end) +
+      (end < text.length ? "..." : "");
+
+    return {
+      before,
+      match,
+      after,
+    };
+  };
+
+  const recentTopics = [
+    "Python",
+    "React hooks",
+    "Machine learning",
+    "Writing tips",
+    "SQL queries",
+  ];
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
+    <View style={styles.container}>
       {/* Header */}
-      <div className="px-5 pt-14 pb-4"
-        style={{ borderBottom: "1px solid rgba(124,58,237,0.1)" }}>
-        <h1 className="mb-4" style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "#EEF0FF" }}>
-          Search
-        </h1>
-        <div className="relative">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2" width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="7" stroke="#8892B0" strokeWidth="1.8"/>
-            <path d="M21 21l-4.35-4.35" stroke="#8892B0" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          <input autoFocus value={query} onChange={e => setQuery(e.target.value)}
+      <View style={styles.header}>
+        <Text style={styles.title}>Search</Text>
+
+        {/* Search Box */}
+        <View style={styles.searchWrapper}>
+          <Text style={styles.searchIcon}>⌕</Text>
+
+          <TextInput
+            autoFocus
+            value={query}
+            onChangeText={setQuery}
             placeholder="Search messages, conversations..."
-            className="w-full pl-11 pr-4 py-3.5 rounded-2xl outline-none"
-            style={{
-              background: "rgba(13,18,32,0.9)", border: "1px solid rgba(124,58,237,0.25)",
-              color: "#EEF0FF", fontFamily: "var(--font-body)", fontSize: 15,
-              boxShadow: "0 0 0 3px rgba(124,58,237,0.08)"
-            }} />
-          {query && (
-            <button onClick={() => setQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#4A5568" strokeWidth="1.8"/><path d="M15 9l-6 6M9 9l6 6" stroke="#4A5568" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            </button>
+            placeholderTextColor="#4A5568"
+            style={styles.searchInput}
+          />
+
+          {query.length > 0 && (
+            <Pressable
+              onPress={() => setQuery("")}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearText}>×</Text>
+            </Pressable>
           )}
-        </div>
-      </div>
+        </View>
+      </View>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-28 px-5" style={{ scrollbarWidth: "none" }}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* No Query */}
         {!query && (
-          <div className="pt-6">
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", marginBottom: 14 }}>
+          <View style={styles.recentSection}>
+            <Text style={styles.sectionLabel}>
               RECENT TOPICS
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {recentTopics.map(topic => (
-                <button key={topic} onClick={() => setQuery(topic)}
-                  className="px-4 py-2 rounded-2xl transition-all duration-150"
-                  style={{ background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)", color: "#A855F7", fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 500 }}
-                  onMouseOver={e => e.currentTarget.style.background = "rgba(124,58,237,0.18)"}
-                  onMouseOut={e => e.currentTarget.style.background = "rgba(124,58,237,0.1)"}>
-                  {topic}
-                </button>
+            </Text>
+
+            <View style={styles.topicContainer}>
+              {recentTopics.map((topic) => (
+                <Pressable
+                  key={topic}
+                  onPress={() => setQuery(topic)}
+                  style={({ pressed }) => [
+                    styles.topicButton,
+                    pressed && styles.topicButtonPressed,
+                  ]}
+                >
+                  <Text style={styles.topicText}>{topic}</Text>
+                </Pressable>
               ))}
-            </div>
+            </View>
 
             {state.conversations.length === 0 && (
-              <div className="flex flex-col items-center gap-4 mt-16 opacity-40">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                  <circle cx="11" cy="11" r="7" stroke="#4A5568" strokeWidth="1.5"/>
-                  <path d="M21 21l-4.35-4.35" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                <p style={{ fontFamily: "var(--font-display)", fontSize: 14, color: "#4A5568", textAlign: "center" }}>
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>⌕</Text>
+
+                <Text style={styles.emptyText}>
                   Start some conversations to search through them
-                </p>
-              </div>
+                </Text>
+              </View>
             )}
-          </div>
+          </View>
         )}
 
+        {/* No Results */}
         {query && results.length === 0 && (
-          <div className="flex flex-col items-center gap-3 pt-16 opacity-50">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <circle cx="11" cy="11" r="7" stroke="#4A5568" strokeWidth="1.5"/>
-              <path d="M21 21l-4.35-4.35" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 15, color: "#4A5568" }}>No results for "{query}"</p>
-          </div>
+          <View style={styles.noResults}>
+            <Text style={styles.noResultsIcon}>⌕</Text>
+
+            <Text style={styles.noResultsText}>
+              No results for "{query}"
+            </Text>
+          </View>
         )}
 
+        {/* Results */}
         {results.length > 0 && (
-          <div className="pt-4">
-            <p style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", marginBottom: 12 }}>
-              {results.length} RESULT{results.length !== 1 ? "S" : ""}
-            </p>
-            {results.map(result => {
-              const h = highlight(result.content, query)
+          <View style={styles.resultsSection}>
+            <Text style={styles.sectionLabel}>
+              {results.length} RESULT
+              {results.length !== 1 ? "S" : ""}
+            </Text>
+
+            {results.map((result) => {
+              const h = highlight(result.content, query);
+
               return (
-                <button key={result.id}
-                  onClick={() => { onOpenChat(result.convId); onNavigate("chat") }}
-                  className="w-full text-left p-4 rounded-2xl mb-3 transition-all duration-150"
-                  style={{ background: "rgba(13,18,32,0.7)", border: "1px solid rgba(255,255,255,0.05)" }}
-                  onMouseOver={e => e.currentTarget.style.background = "rgba(124,58,237,0.08)"}
-                  onMouseOut={e => e.currentTarget.style.background = "rgba(13,18,32,0.7)"}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="rounded-lg px-2 py-0.5"
-                      style={{ background: result.role === "user" ? "rgba(124,58,237,0.2)" : "rgba(99,102,241,0.2)" }}>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: result.role === "user" ? "#A855F7" : "#818CF8", fontWeight: 600 }}>
-                        {result.role === "user" ? "You" : "VEXA"}
-                      </span>
-                    </div>
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: 12, color: "#8892B0" }}>in</span>
-                    <span style={{ fontFamily: "var(--font-display)", fontSize: 12, color: "#A855F7", fontWeight: 600 }}>
+                <Pressable
+                  key={result.id}
+                  onPress={() => {
+                    onOpenChat(result.convId);
+                    onNavigate("chat");
+                  }}
+                  style={({ pressed }) => [
+                    styles.resultCard,
+                    pressed && styles.resultCardPressed,
+                  ]}
+                >
+                  {/* Result Header */}
+                  <View style={styles.resultHeader}>
+                    <View
+                      style={[
+                        styles.roleBadge,
+                        {
+                          backgroundColor:
+                            result.role === "user"
+                              ? "rgba(124,58,237,0.2)"
+                              : "rgba(99,102,241,0.2)",
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.roleText,
+                          {
+                            color:
+                              result.role === "user"
+                                ? "#A855F7"
+                                : "#818CF8",
+                          },
+                        ]}
+                      >
+                        {result.role === "user"
+                          ? "You"
+                          : "VEXA"}
+                      </Text>
+                    </View>
+
+                    <Text style={styles.inText}>in</Text>
+
+                    <Text
+                      numberOfLines={1}
+                      style={styles.conversationTitle}
+                    >
                       {result.convTitle}
-                    </span>
-                  </div>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#8892B0", lineHeight: 1.6 }}>
-                    {typeof h === "string" ? h : (
+                    </Text>
+                  </View>
+
+                  {/* Message */}
+                  <Text style={styles.messageText}>
+                    {typeof h === "string" ? (
+                      h
+                    ) : (
                       <>
-                        {h.before}
-                        <mark style={{ background: "rgba(168,85,247,0.3)", color: "#EEF0FF", borderRadius: 3, padding: "0 2px" }}>{h.match}</mark>
-                        {h.after}
+                        <Text>{h.before}</Text>
+
+                        <Text style={styles.highlight}>
+                          {h.match}
+                        </Text>
+
+                        <Text>{h.after}</Text>
                       </>
                     )}
-                  </p>
-                </button>
-              )
+                  </Text>
+                </Pressable>
+              );
             })}
-          </div>
+          </View>
         )}
-      </div>
+      </ScrollView>
 
-      <BottomNav active="search" onNavigate={onNavigate} />
-    </div>
-  )
+      {/* Bottom Navigation */}
+      <BottomNav
+        active="search"
+        onNavigate={onNavigate}
+      />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#060912",
+  },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 48,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(124,58,237,0.1)",
+  },
+
+  title: {
+    marginBottom: 16,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#EEF0FF",
+  },
+
+  searchWrapper: {
+    height: 52,
+    position: "relative",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(13,18,32,0.9)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+    borderRadius: 16,
+    shadowColor: "#7C3AED",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  searchIcon: {
+    marginLeft: 14,
+    marginRight: 8,
+    fontSize: 25,
+    color: "#8892B0",
+  },
+
+  searchInput: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 4,
+    color: "#EEF0FF",
+    fontSize: 15,
+  },
+
+  clearButton: {
+    width: 36,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 4,
+  },
+
+  clearText: {
+    fontSize: 25,
+    color: "#4A5568",
+    fontWeight: "300",
+  },
+
+  content: {
+    flex: 1,
+  },
+
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 110,
+  },
+
+  recentSection: {
+    paddingTop: 24,
+  },
+
+  sectionLabel: {
+    marginBottom: 14,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#8892B0",
+    letterSpacing: 0.7,
+  },
+
+  topicContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+
+  topicButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 16,
+    backgroundColor: "rgba(124,58,237,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.2)",
+  },
+
+  topicButtonPressed: {
+    backgroundColor: "rgba(124,58,237,0.2)",
+  },
+
+  topicText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#A855F7",
+  },
+
+  emptyState: {
+    alignItems: "center",
+    marginTop: 70,
+    opacity: 0.45,
+  },
+
+  emptyIcon: {
+    fontSize: 48,
+    color: "#4A5568",
+    marginBottom: 14,
+  },
+
+  emptyText: {
+    maxWidth: 260,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#4A5568",
+    lineHeight: 20,
+  },
+
+  noResults: {
+    alignItems: "center",
+    paddingTop: 64,
+    opacity: 0.5,
+  },
+
+  noResultsIcon: {
+    fontSize: 42,
+    color: "#4A5568",
+    marginBottom: 12,
+  },
+
+  noResultsText: {
+    fontSize: 15,
+    color: "#4A5568",
+  },
+
+  resultsSection: {
+    paddingTop: 18,
+  },
+
+  resultCard: {
+    width: "100%",
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+    backgroundColor: "rgba(13,18,32,0.7)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+
+  resultCardPressed: {
+    backgroundColor: "rgba(124,58,237,0.1)",
+  },
+
+  resultHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 9,
+  },
+
+  roleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 7,
+  },
+
+  roleText: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+
+  inText: {
+    marginHorizontal: 7,
+    fontSize: 12,
+    color: "#8892B0",
+  },
+
+  conversationTitle: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#A855F7",
+  },
+
+  messageText: {
+    fontSize: 13,
+    color: "#8892B0",
+    lineHeight: 21,
+  },
+
+  highlight: {
+    backgroundColor: "rgba(168,85,247,0.3)",
+    color: "#EEF0FF",
+    borderRadius: 3,
+  },
+});

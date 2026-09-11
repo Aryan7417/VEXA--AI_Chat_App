@@ -59,26 +59,69 @@ export default function ChatsScreen({
     );
   }, [search, state.conversations]);
 
-  const formatDate = (date: Date) => {
-    const d = new Date(date);
-    const now = new Date();
+  // const formatDate = (date: string | number | Date) => {
+  //   const messageDate = new Date(date)
+  //   const now = new Date()
 
-    const diff = now.getTime() - d.getTime();
+  //   if (isNaN(messageDate.getTime())) {
+  //     return ""
+  //   }
 
-    if (diff < 60_000) {
-      return "just now";
+  //   const diff = Math.max(0, now.getTime() - messageDate.getTime())
+
+  //   if (diff < 60_000) {
+  //     return "Just now"
+  //   }
+
+  //   if (diff < 3_600_000) {
+  //     return `${Math.floor(diff / 60_000)}m ago`
+  //   }
+
+  //   if (diff < 86_400_000) {
+  //     return `${Math.floor(diff / 3_600_000)}h ago`
+  //   }
+
+  //   if (diff < 604_800_000) {
+  //     return `${Math.floor(diff / 86_400_000)}d ago`
+  //   }
+
+  //   return messageDate.toLocaleDateString("en-IN", {
+  //     day: "numeric",
+  //     month: "short",
+  //     year: "numeric",
+  //   })
+  // }
+
+
+  const formatDate = (date: string | number | Date) => {
+    let messageDate: Date
+
+    if (typeof date === "number") {
+      messageDate = new Date(date < 10_000_000_000 ? date * 1000 : date)
+    } else {
+      messageDate = new Date(date)
     }
 
-    if (diff < 3_600_000) {
-      return `${Math.floor(diff / 60_000)}m ago`;
+    const now = new Date()
+
+    if (isNaN(messageDate.getTime())) {
+      return ""
     }
 
-    if (diff < 86_400_000) {
-      return `${Math.floor(diff / 3_600_000)}h ago`;
-    }
+    const diff = Math.max(0, now.getTime() - messageDate.getTime())
 
-    return d.toLocaleDateString();
-  };
+    if (diff < 60_000) return "Just now"
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`
+    if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)}d ago`
+
+    return messageDate.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    })
+  }
+
 
   const openChat = (conversation: Conversation) => {
     setMenuId(null);
