@@ -1,8 +1,19 @@
-import { useState } from "react"
-import { Screen } from "../../types"
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Screen } from "../../types";
 
 interface Props {
-  onNext: (screen: Screen, phone?: string) => void
+  onNext: (screen: Screen, phone?: string) => void;
 }
 
 const countries = [
@@ -14,117 +25,368 @@ const countries = [
   { code: "+81", flag: "🇯🇵", name: "JP" },
   { code: "+86", flag: "🇨🇳", name: "CN" },
   { code: "+55", flag: "🇧🇷", name: "BR" },
-  { code: "+91", flag: "ind", name: "IND" },
-]
+  { code: "+91", flag: "IN", name: "IND" },
+];
 
 export default function PhoneLoginScreen({ onNext }: Props) {
-  const [country, setCountry] = useState(countries[0])
-  const [phone, setPhone] = useState("")
-  const [showCountries, setShowCountries] = useState(false)
+  const [country, setCountry] = useState(countries[2]);
+  const [phone, setPhone] = useState("");
+  const [showCountries, setShowCountries] = useState(false);
 
-  const isValid = phone.replace(/\D/g, "").length >= 7
+  const isValid = phone.replace(/\D/g, "").length >= 7;
+
+  const handleContinue = () => {
+    if (!isValid) return;
+
+    onNext("otp", `${country.code} ${phone}`);
+  };
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
-      {/* Top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width: 300, height: 200, background: "radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%)", filter: "blur(30px)" }} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={styles.container}>
+        {/* Top Glow */}
+        <View style={styles.topGlow} />
 
-      <div className="flex flex-col flex-1 px-6 pt-20">
-        {/* Logo small */}
-        <div className="mb-10">
-          <div className="rounded-2xl flex items-center justify-center mb-6"
-            style={{ width: 52, height: 52, background: "linear-gradient(135deg, #7C3AED, #6D28D9)", boxShadow: "0 0 20px rgba(124,58,237,0.4)" }}>
-            <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-              <path d="M8 12L24 38L40 12" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "#EEF0FF", lineHeight: 1.2 }}>
-            Welcome to VEXA
-          </h1>
-          <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#8892B0", lineHeight: 1.6 }}>
-            Enter your phone number to continue. We'll send you a verification code.
-          </p>
-        </div>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <LinearGradient
+              colors={["#7C3AED", "#6D28D9"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logo}
+            >
+              <Text style={styles.logoText}>V</Text>
+            </LinearGradient>
 
-        {/* Phone input */}
-        <div className="mb-4">
-          <label style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>
-            PHONE NUMBER
-          </label>
-          <div className="flex gap-3">
-            {/* Country picker */}
-            <button onClick={() => setShowCountries(!showCountries)}
-              className="flex items-center gap-2 rounded-2xl px-3 transition-all duration-200"
-              style={{
-                height: 56, minWidth: 90,
-                background: "rgba(13,18,32,0.8)", border: "1px solid rgba(124,58,237,0.25)",
-                color: "#EEF0FF"
-              }}>
-              <span style={{ fontSize: 18 }}>{country.flag}</span>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 600 }}>{country.code}</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <path d="M6 9l6 6 6-6" stroke="#8892B0" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
+            <Text style={styles.title}>Welcome to VEXA</Text>
 
-            {/* Phone field */}
-            <div className="flex-1 relative">
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                placeholder="Mobile number"
-                className="w-full rounded-2xl px-4 outline-none transition-all duration-200"
-                style={{
-                  height: 56, background: "rgba(13,18,32,0.8)",
-                  border: `1px solid ${phone ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`,
-                  color: "#EEF0FF", fontFamily: "var(--font-display)", fontSize: 16,
-                  boxShadow: phone ? "0 0 0 3px rgba(124,58,237,0.1)" : "none"
-                }} />
-            </div>
-          </div>
+            <Text style={styles.subtitle}>
+              Enter your phone number to continue. We'll send you a
+              verification code.
+            </Text>
+          </View>
 
-          {/* Country dropdown */}
+          {/* Phone Label */}
+          <Text style={styles.label}>PHONE NUMBER</Text>
+
+          {/* Phone Input Row */}
+          <View style={styles.phoneRow}>
+            {/* Country Picker */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setShowCountries(!showCountries)}
+              style={styles.countryButton}
+            >
+              <Text style={styles.flag}>{country.flag}</Text>
+
+              <Text style={styles.countryCode}>{country.code}</Text>
+
+              <Text style={styles.arrow}>
+                {showCountries ? "▲" : "▼"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Phone Input */}
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Mobile number"
+              placeholderTextColor="#4A5568"
+              keyboardType="phone-pad"
+              maxLength={15}
+              style={[
+                styles.phoneInput,
+                phone.length > 0 && styles.phoneInputActive,
+              ]}
+            />
+          </View>
+
+          {/* Country Dropdown */}
           {showCountries && (
-            <div className="mt-2 rounded-2xl overflow-hidden z-10"
-              style={{ background: "#0D1220", border: "1px solid rgba(124,58,237,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
-              {countries.map(c => (
-                <button key={c.code} onClick={() => { setCountry(c); setShowCountries(false) }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-150"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", color: "#EEF0FF" }}
-                  onMouseOver={e => (e.currentTarget.style.background = "rgba(124,58,237,0.1)")}
-                  onMouseOut={e => (e.currentTarget.style.background = "transparent")}>
-                  <span style={{ fontSize: 18 }}>{c.flag}</span>
-                  <span style={{ fontFamily: "var(--font-display)", fontSize: 14, flex: 1 }}>{c.name}</span>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "#8892B0" }}>{c.code}</span>
-                </button>
+            <View style={styles.dropdown}>
+              {countries.map((item, index) => (
+                <TouchableOpacity
+                  key={`${item.code}-${item.name}-${index}`}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setCountry(item);
+                    setShowCountries(false);
+                  }}
+                  style={styles.countryItem}
+                >
+                  <Text style={styles.countryFlag}>{item.flag}</Text>
+
+                  <Text style={styles.countryName}>{item.name}</Text>
+
+                  <Text style={styles.countryItemCode}>
+                    {item.code}
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </div>
+            </View>
           )}
-        </div>
 
-        {/* Terms */}
-        <p className="mt-2 mb-8" style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#4A5568", lineHeight: 1.6 }}>
-          By continuing, you agree to our{" "}
-          <span style={{ color: "#7C3AED" }}>Terms of Service</span> and{" "}
-          <span style={{ color: "#7C3AED" }}>Privacy Policy</span>
-        </p>
+          {/* Terms */}
+          <Text style={styles.terms}>
+            By continuing, you agree to our{" "}
+            <Text style={styles.termsAccent}>Terms of Service</Text>
+            {" "}and{" "}
+            <Text style={styles.termsAccent}>Privacy Policy</Text>
+          </Text>
 
-        <button disabled={!isValid}
-          onClick={() => onNext("otp", `${country.code} ${phone}`)}
-          className="w-full rounded-2xl py-4 font-semibold transition-all duration-200"
-          style={{
-            fontFamily: "var(--font-display)", fontSize: 16,
-            background: isValid ? "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)" : "rgba(124,58,237,0.15)",
-            color: isValid ? "#fff" : "#4A5568",
-            boxShadow: isValid ? "0 0 24px rgba(124,58,237,0.4)" : "none",
-            cursor: isValid ? "pointer" : "not-allowed"
-          }}>
-          Continue
-        </button>
-      </div>
+          {/* Continue Button */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            disabled={!isValid}
+            onPress={handleContinue}
+            style={styles.continueWrapper}
+          >
+            <LinearGradient
+              colors={
+                isValid
+                  ? ["#7C3AED", "#6D28D9"]
+                  : ["rgba(124,58,237,0.15)", "rgba(124,58,237,0.15)"]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.continueButton}
+            >
+              <Text
+                style={[
+                  styles.continueText,
+                  !isValid && styles.continueTextDisabled,
+                ]}
+              >
+                Continue
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
 
-      {/* Decorative grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.025]"
-        style={{ backgroundImage: "linear-gradient(rgba(168,85,247,1) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,1) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-    </div>
-  )
+        {/* Grid Effect */}
+        <View style={styles.gridOverlay} pointerEvents="none" />
+      </View>
+    </KeyboardAvoidingView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#060912",
+  },
+
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 75,
+    paddingBottom: 40,
+  },
+
+  topGlow: {
+    position: "absolute",
+    top: -50,
+    left: "50%",
+    marginLeft: -150,
+    width: 300,
+    height: 200,
+    borderRadius: 150,
+    backgroundColor: "rgba(124,58,237,0.12)",
+    opacity: 0.8,
+  },
+
+  logoContainer: {
+    marginBottom: 38,
+  },
+
+  logo: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 22,
+    shadowColor: "#7C3AED",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  logoText: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    fontWeight: "800",
+  },
+
+  title: {
+    color: "#EEF0FF",
+    fontSize: 28,
+    fontWeight: "700",
+    lineHeight: 34,
+  },
+
+  subtitle: {
+    marginTop: 8,
+    color: "#8892B0",
+    fontSize: 14,
+    lineHeight: 23,
+  },
+
+  label: {
+    color: "#8892B0",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+
+  phoneRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  countryButton: {
+    height: 56,
+    minWidth: 92,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: "#0D1220",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  flag: {
+    fontSize: 19,
+  },
+
+  countryCode: {
+    color: "#EEF0FF",
+    fontSize: 14,
+    fontWeight: "600",
+    marginHorizontal: 5,
+  },
+
+  arrow: {
+    color: "#8892B0",
+    fontSize: 9,
+  },
+
+  phoneInput: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    backgroundColor: "#0D1220",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.2)",
+    color: "#EEF0FF",
+    fontSize: 16,
+  },
+
+  phoneInputActive: {
+    borderColor: "rgba(124,58,237,0.5)",
+    shadowColor: "#7C3AED",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+  },
+
+  dropdown: {
+    marginTop: 8,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#0D1220",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.25)",
+    elevation: 10,
+  },
+
+  countryItem: {
+    height: 52,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.04)",
+  },
+
+  countryFlag: {
+    fontSize: 19,
+    width: 35,
+  },
+
+  countryName: {
+    flex: 1,
+    color: "#EEF0FF",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+
+  countryItemCode: {
+    color: "#8892B0",
+    fontSize: 13,
+  },
+
+  terms: {
+    marginTop: 12,
+    marginBottom: 28,
+    color: "#4A5568",
+    fontSize: 12,
+    lineHeight: 19,
+  },
+
+  termsAccent: {
+    color: "#7C3AED",
+  },
+
+  continueWrapper: {
+    width: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+
+  continueButton: {
+    height: 58,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  continueText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  continueTextDisabled: {
+    color: "#4A5568",
+  },
+
+  gridOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.02,
+    borderWidth: 1,
+    borderColor: "#A855F7",
+  },
+});

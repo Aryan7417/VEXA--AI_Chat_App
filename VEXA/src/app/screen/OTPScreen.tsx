@@ -1,171 +1,601 @@
-import { useState, useEffect, useRef } from "react"
-import { Screen } from "../../types"
+
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Screen } from "../../types";
 
 interface Props {
-  phone: string
-  onNext: (screen: Screen) => void
-  onBack: () => void
+  phone: string;
+  onNext: (screen: Screen) => void;
+  onBack: () => void;
 }
 
-export default function OTPScreen({ phone, onNext, onBack }: Props) {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""])
-  const [timer, setTimer] = useState(30)
-  const [verifying, setVerifying] = useState(false)
-  const [verified, setVerified] = useState(false)
-  const [error, setError] = useState(false)
-  const inputs = useRef<(HTMLInputElement | null)[]>([])
+export default function OTPScreen({
+  phone,
+  onNext,
+  onBack,
+}: Props) {
+  const [otp, setOtp] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
 
+  const [timer, setTimer] = useState(30);
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState(false);
+
+  const inputs = useRef<Array<TextInput | null>>([]);
+
+  // Timer
   useEffect(() => {
-    if (timer <= 0) return
-    const t = setInterval(() => setTimer(p => p - 1), 1000)
-    return () => clearInterval(t)
-  }, [timer])
+    if (timer <= 0) return;
 
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // OTP change
   const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return
-    const newOtp = [...otp]
-    newOtp[index] = value.slice(-1)
-    setOtp(newOtp)
-    setError(false)
-    if (value && index < 5) inputs.current[index + 1]?.focus()
-    if (newOtp.every(d => d) && newOtp.join("").length === 6) {
-      handleVerify(newOtp.join(""))
-    }
-  }
+    // Only numbers
+    const numericValue = value.replace(/[^0-9]/g, "");
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputs.current[index - 1]?.focus()
+    if (!numericValue) {
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
+      setError(false);
+      return;
     }
-  }
 
+    const digit = numericValue.slice(-1);
+
+    const newOtp = [...otp];
+    newOtp[index] = digit;
+
+    setOtp(newOtp);
+    setError(false);
+
+    // Move to next input
+    if (index < 5) {
+      inputs.current[index + 1]?.focus();
+    }
+
+    // Auto verify when all digits entered
+    if (
+      newOtp.every((d) => d !== "") &&
+      newOtp.join("").length === 6
+    ) {
+      handleVerify(newOtp.join(""));
+    }
+  };
+
+  // Backspace handling
+  const handleKeyPress = (
+    index: number,
+    key: string
+  ) => {
+    if (key === "Backspace" && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
+  // Verify OTP
   const handleVerify = (code: string) => {
-    setVerifying(true)
-    setTimeout(() => {
-      if (code === "123456" || code.length === 6) {
-        setVerified(true)
-        setTimeout(() => onNext("profile-setup"), 900)
-      } else {
-        setError(true)
-        setVerifying(false)
-        setOtp(["", "", "", "", "", ""])
-        inputs.current[0]?.focus()
-      }
-    }, 1200)
-  }
+    if (verifying || verified) return;
 
-  const filled = otp.join("").length
+    setVerifying(true);
+    setError(false);
+
+    setTimeout(() => {
+      // Demo verification
+      // Production mein Firebase OTP verification yahan aayega.
+      if (code.length === 6) {
+        setVerified(true);
+        setVerifying(false);
+
+        setTimeout(() => {
+          onNext("profile-setup");
+        }, 900);
+      } else {
+        setError(true);
+        setVerifying(false);
+
+        setOtp([
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ]);
+
+        inputs.current[0]?.focus();
+      }
+    }, 1200);
+  };
+
+  const filled = otp.join("").length;
+
+  const canVerify =
+    filled === 6 &&
+    !verifying &&
+    !verified;
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width: 300, height: 200, background: "radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%)", filter: "blur(30px)" }} />
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : undefined
+      }
+    >
+      <View style={styles.container}>
 
-      {/* Back button */}
-      <button onClick={onBack} className="absolute left-5 top-14 z-10 p-2">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M19 12H5M12 5l-7 7 7 7" stroke="#8892B0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
+        {/* Top Glow */}
+        <View style={styles.topGlow} />
 
-      <div className="flex flex-col flex-1 px-6 pt-20">
-        {/* Icon */}
-        <div className="mb-8 flex flex-col items-start">
-          <div className="rounded-2xl flex items-center justify-center mb-6"
-            style={{ width: 56, height: 56, background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.3)" }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="2" width="14" height="20" rx="2" stroke="#A855F7" strokeWidth="1.8"/>
-              <path d="M9 7h6M9 11h6M9 15h4" stroke="#A855F7" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="17" cy="17" r="4" fill="#7C3AED"/>
-              <path d="M15.5 17l1 1 2-2" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "#EEF0FF" }}>
-            Verify your number
-          </h1>
-          <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#8892B0" }}>
-            Enter the 6-digit code sent to
-          </p>
-          <p style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 600, color: "#A855F7" }}>
-            {phone}
-          </p>
-        </div>
+        {/* Back Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onBack}
+          style={styles.backButton}
+        >
+          <Text style={styles.backArrow}>‹</Text>
+        </TouchableOpacity>
 
-        {/* OTP inputs */}
-        <div className="flex gap-3 mb-6">
-          {otp.map((digit, i) => (
-            <input
-              key={i}
-              ref={el => { inputs.current[i] = el }}
-              type="text" inputMode="numeric" maxLength={1}
-              value={digit}
-              onChange={e => handleChange(i, e.target.value)}
-              onKeyDown={e => handleKeyDown(i, e)}
-              className="flex-1 rounded-2xl text-center outline-none transition-all duration-200"
-              style={{
-                height: 58, fontSize: 22, fontFamily: "var(--font-display)", fontWeight: 700,
-                background: digit ? "rgba(124,58,237,0.12)" : "rgba(13,18,32,0.8)",
-                border: error ? "1.5px solid rgba(239,68,68,0.6)" : digit ? "1.5px solid rgba(124,58,237,0.6)" : "1.5px solid rgba(124,58,237,0.2)",
-                color: error ? "#EF4444" : "#EEF0FF",
-                boxShadow: digit && !error ? "0 0 12px rgba(124,58,237,0.2)" : "none"
-              }}
-              disabled={verifying || verified}
-            />
-          ))}
-        </div>
+        <View style={styles.content}>
 
-        {/* Status */}
-        {error && (
-          <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-xl"
-            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#EF4444" strokeWidth="2"/><path d="M12 8v4M12 16h.01" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/></svg>
-            <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#EF4444" }}>Incorrect code. Try again.</span>
-          </div>
-        )}
+          {/* Icon */}
+          <View style={styles.header}>
 
-        {verified && (
-          <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-xl animate-fade-in"
-            style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2"/><path d="M8 12l3 3 5-5" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#10B981" }}>Verified! Setting up your account...</span>
-          </div>
-        )}
+            <View style={styles.iconContainer}>
+              <Text style={styles.iconText}>
+                ✓
+              </Text>
+            </View>
 
-        {/* Verify button */}
-        <button onClick={() => filled === 6 && handleVerify(otp.join(""))}
-          disabled={filled < 6 || verifying || verified}
-          className="w-full rounded-2xl py-4 font-semibold transition-all duration-200 flex items-center justify-center gap-3"
-          style={{
-            fontFamily: "var(--font-display)", fontSize: 16,
-            background: filled === 6 && !verifying && !verified ? "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)" : "rgba(124,58,237,0.15)",
-            color: filled === 6 && !verifying && !verified ? "#fff" : "#4A5568",
-            boxShadow: filled === 6 && !verifying && !verified ? "0 0 24px rgba(124,58,237,0.4)" : "none",
-            cursor: filled === 6 && !verifying && !verified ? "pointer" : "not-allowed"
-          }}>
-          {verifying && <div className="flex gap-1"><span className="typing-dot"/><span className="typing-dot"/><span className="typing-dot"/></div>}
-          {!verifying && (verified ? "Verified ✓" : "Verify Code")}
-        </button>
+            <Text style={styles.title}>
+              Verify your number
+            </Text>
 
-        {/* Resend */}
-        <div className="flex items-center justify-center gap-2 mt-5">
-          <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#8892B0" }}>Didn't receive a code?</span>
-          {timer > 0 ? (
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 13, color: "#4A5568" }}>
-              Resend in {timer}s
-            </span>
-          ) : (
-            <button onClick={() => setTimer(30)}
-              style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 600, color: "#A855F7" }}>
-              Resend OTP
-            </button>
+            <Text style={styles.subtitle}>
+              Enter the 6-digit code sent to
+            </Text>
+
+            <Text style={styles.phone}>
+              {phone}
+            </Text>
+
+          </View>
+
+          {/* OTP Inputs */}
+          <View style={styles.otpContainer}>
+            {otp.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => {
+                  inputs.current[index] = ref;
+                }}
+                value={digit}
+                onChangeText={(value) =>
+                  handleChange(index, value)
+                }
+                onKeyPress={({ nativeEvent }) =>
+                  handleKeyPress(
+                    index,
+                    nativeEvent.key
+                  )
+                }
+                keyboardType="number-pad"
+                maxLength={1}
+                editable={
+                  !verifying && !verified
+                }
+                selectTextOnFocus
+                style={[
+                  styles.otpInput,
+
+                  digit &&
+                  styles.otpInputFilled,
+
+                  error &&
+                  styles.otpInputError,
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Error */}
+          {error && (
+            <View style={styles.errorBox}>
+              <View style={styles.errorIcon}>
+                <Text style={styles.errorIconText}>
+                  !
+                </Text>
+              </View>
+
+              <Text style={styles.errorText}>
+                Incorrect code. Try again.
+              </Text>
+            </View>
           )}
-        </div>
 
-        {/* Hint */}
-        <p className="mt-8 text-center" style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "#4A5568" }}>
-          Tip: Use any 6 digits to continue
-        </p>
-      </div>
-    </div>
-  )
+          {/* Verified */}
+          {verified && (
+            <View style={styles.successBox}>
+              <View style={styles.successIcon}>
+                <Text style={styles.successIconText}>
+                  ✓
+                </Text>
+              </View>
+
+              <Text style={styles.successText}>
+                Verified! Setting up your account...
+              </Text>
+            </View>
+          )}
+
+          {/* Verify Button */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            disabled={!canVerify}
+            onPress={() =>
+              handleVerify(otp.join(""))
+            }
+            style={styles.verifyWrapper}
+          >
+            {canVerify ? (
+              <LinearGradient
+                colors={[
+                  "#7C3AED",
+                  "#6D28D9",
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.verifyButton}
+              >
+                <Text style={styles.verifyText}>
+                  Verify Code
+                </Text>
+              </LinearGradient>
+            ) : (
+              <View
+                style={[
+                  styles.verifyButton,
+                  styles.verifyDisabled,
+                ]}
+              >
+                {verifying ? (
+                  <Text style={styles.loadingText}>
+                    • • •
+                  </Text>
+                ) : (
+                  <Text
+                    style={
+                      styles.verifyTextDisabled
+                    }
+                  >
+                    {verified
+                      ? "Verified ✓"
+                      : "Verify Code"}
+                  </Text>
+                )}
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Resend */}
+          <View style={styles.resendContainer}>
+            <Text style={styles.resendText}>
+              Didn't receive a code?
+            </Text>
+
+            {timer > 0 ? (
+              <Text style={styles.resendTimer}>
+                Resend in {timer}s
+              </Text>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setTimer(30);
+                  setError(false);
+                  setOtp([
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                  ]);
+                  inputs.current[0]?.focus();
+                }}
+              >
+                <Text style={styles.resendButton}>
+                  Resend OTP
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Hint */}
+          <Text style={styles.hint}>
+            Tip: Use any 6 digits to continue
+          </Text>
+
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#060912",
+  },
+
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 78,
+  },
+
+  topGlow: {
+    position: "absolute",
+    top: -40,
+    left: "50%",
+    marginLeft: -150,
+    width: 300,
+    height: 200,
+    borderRadius: 150,
+    backgroundColor: "rgba(124,58,237,0.12)",
+  },
+
+  backButton: {
+    position: "absolute",
+    top: 48,
+    left: 16,
+    width: 42,
+    height: 42,
+    zIndex: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  backArrow: {
+    color: "#8892B0",
+    fontSize: 38,
+    fontWeight: "300",
+    lineHeight: 40,
+  },
+
+  header: {
+    marginBottom: 32,
+    alignItems: "flex-start",
+  },
+
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "rgba(124,58,237,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 22,
+  },
+
+  iconText: {
+    color: "#A855F7",
+    fontSize: 28,
+    fontWeight: "700",
+  },
+
+  title: {
+    color: "#EEF0FF",
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+
+  subtitle: {
+    color: "#8892B0",
+    fontSize: 14,
+    marginBottom: 5,
+  },
+
+  phone: {
+    color: "#A855F7",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+
+  otpInput: {
+    width: 47,
+    height: 58,
+    borderRadius: 16,
+    backgroundColor: "#0D1220",
+    borderWidth: 1.5,
+    borderColor: "rgba(124,58,237,0.2)",
+    color: "#EEF0FF",
+    fontSize: 22,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+
+  otpInputFilled: {
+    backgroundColor: "rgba(124,58,237,0.12)",
+    borderColor: "rgba(124,58,237,0.6)",
+    shadowColor: "#7C3AED",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  otpInputError: {
+    borderColor: "rgba(239,68,68,0.7)",
+    color: "#EF4444",
+  },
+
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(239,68,68,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.25)",
+    marginBottom: 16,
+  },
+
+  errorIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#EF4444",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+
+  errorIconText: {
+    color: "#EF4444",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  errorText: {
+    color: "#EF4444",
+    fontSize: 13,
+  },
+
+  successBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: "rgba(16,185,129,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(16,185,129,0.3)",
+    marginBottom: 16,
+  },
+
+  successIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: "#10B981",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+
+  successIconText: {
+    color: "#10B981",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  successText: {
+    color: "#10B981",
+    fontSize: 13,
+    flex: 1,
+  },
+
+  verifyWrapper: {
+    width: "100%",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+
+  verifyButton: {
+    height: 58,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  verifyDisabled: {
+    backgroundColor: "rgba(124,58,237,0.15)",
+  },
+
+  verifyText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  verifyTextDisabled: {
+    color: "#4A5568",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  loadingText: {
+    color: "#A855F7",
+    fontSize: 20,
+    fontWeight: "700",
+    letterSpacing: 4,
+  },
+
+  resendContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  resendText: {
+    color: "#8892B0",
+    fontSize: 13,
+    marginRight: 6,
+  },
+
+  resendTimer: {
+    color: "#4A5568",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  resendButton: {
+    color: "#A855F7",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  hint: {
+    color: "#4A5568",
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 30,
+  },
+});
+
