@@ -1,114 +1,414 @@
-import { useState } from "react"
-import { Screen } from "../../types"
+
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
+import { Screen } from "../../types";
 
 interface Props {
-  onNext: (screen: Screen, name: string, avatar: string | null) => void
+  onNext: (screen: Screen, name: string, avatar: string | null) => void;
 }
 
-const avatarColors = ["#7C3AED", "#6366F1", "#EC4899", "#10B981", "#F59E0B", "#EF4444"]
-const avatarEmojis = ["🧑", "👩", "🧔", "👨‍💻", "👩‍💻", "🤖"]
+const avatarColors = [
+  "#7C3AED",
+  "#6366F1",
+  "#EC4899",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+];
+
+const avatarEmojis = ["🧑", "👩", "🧔", "👨‍💻", "👩‍💻", "🤖"];
 
 export default function CreateProfileScreen({ onNext }: Props) {
-  const [name, setName] = useState("")
-  const [selectedAvatar, setSelectedAvatar] = useState(0)
+  const [name, setName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState(0);
 
-  const isValid = name.trim().length >= 2
+  const isValid = name.trim().length >= 2;
+
+  const handleStart = () => {
+    if (!isValid) return;
+
+    onNext(
+      "home",
+      name.trim(),
+      avatarEmojis[selectedAvatar]
+    );
+  };
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: "#060912" }}>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
-        style={{ width: 300, height: 200, background: "radial-gradient(ellipse, rgba(124,58,237,0.2) 0%, transparent 70%)", filter: "blur(30px)" }} />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#060912" />
 
-      <div className="flex flex-col flex-1 px-6 pt-16">
-        <div className="mb-8">
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "#EEF0FF" }}>
-            Create your profile
-          </h1>
-          <p className="mt-2" style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "#8892B0" }}>
+      {/* Top purple glow */}
+      <View style={styles.topGlow} />
+
+      <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Create your profile</Text>
+
+          <Text style={styles.subtitle}>
             Personalize your VEXA experience
-          </p>
-        </div>
+          </Text>
+        </View>
 
-        {/* Avatar selection */}
-        <div className="flex flex-col items-center mb-8">
-          {/* Large avatar preview */}
-          <div className="relative mb-5">
-            <div className="rounded-3xl flex items-center justify-center"
-              style={{
-                width: 96, height: 96,
-                background: `linear-gradient(135deg, ${avatarColors[selectedAvatar]} 0%, ${avatarColors[(selectedAvatar + 1) % avatarColors.length]} 100%)`,
-                boxShadow: `0 0 30px ${avatarColors[selectedAvatar]}60, 0 0 60px ${avatarColors[selectedAvatar]}20`
-              }}>
-              <span style={{ fontSize: 40 }}>{avatarEmojis[selectedAvatar]}</span>
-            </div>
-            <button className="absolute -bottom-2 -right-2 rounded-full flex items-center justify-center"
-              style={{ width: 30, height: 30, background: "#7C3AED", border: "2px solid #060912" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                  stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
+        {/* Avatar section */}
+        <View style={styles.avatarSection}>
+
+          {/* Large Avatar */}
+          <View style={styles.avatarPreviewContainer}>
+            <View
+              style={[
+                styles.avatarPreview,
+                {
+                  backgroundColor: avatarColors[selectedAvatar],
+                  shadowColor: avatarColors[selectedAvatar],
+                },
+              ]}
+            >
+              <Text style={styles.avatarEmojiLarge}>
+                {avatarEmojis[selectedAvatar]}
+              </Text>
+            </View>
+
+            {/* Edit button */}
+            <Pressable style={styles.editButton}>
+              <Text style={styles.editIcon}>✎</Text>
+            </Pressable>
+          </View>
 
           {/* Avatar options */}
-          <div className="flex gap-3">
-            {avatarEmojis.map((emoji, i) => (
-              <button key={i} onClick={() => setSelectedAvatar(i)}
-                className="rounded-2xl flex items-center justify-center transition-all duration-200"
-                style={{
-                  width: 44, height: 44, fontSize: 22,
-                  background: i === selectedAvatar ? `${avatarColors[i]}25` : "rgba(13,18,32,0.8)",
-                  border: i === selectedAvatar ? `1.5px solid ${avatarColors[i]}` : "1.5px solid rgba(255,255,255,0.06)",
-                  boxShadow: i === selectedAvatar ? `0 0 12px ${avatarColors[i]}40` : "none",
-                  transform: i === selectedAvatar ? "scale(1.08)" : "scale(1)"
-                }}>
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
+          <View style={styles.avatarOptions}>
+            {avatarEmojis.map((emoji, index) => {
+              const selected = index === selectedAvatar;
+
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() => setSelectedAvatar(index)}
+                  style={[
+                    styles.avatarOption,
+                    {
+                      backgroundColor: selected
+                        ? `${avatarColors[index]}25`
+                        : "rgba(13,18,32,0.8)",
+
+                      borderColor: selected
+                        ? avatarColors[index]
+                        : "rgba(255,255,255,0.06)",
+
+                      transform: [
+                        {
+                          scale: selected ? 1.08 : 1,
+                        },
+                      ],
+
+                      shadowColor: selected
+                        ? avatarColors[index]
+                        : "transparent",
+
+                      shadowOpacity: selected ? 0.4 : 0,
+                      shadowRadius: 8,
+                    },
+                  ]}
+                >
+                  <Text style={styles.avatarEmoji}>
+                    {emoji}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
 
         {/* Name input */}
-        <div className="mb-6">
-          <label style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 600, color: "#8892B0", letterSpacing: "0.06em", display: "block", marginBottom: 10 }}>
-            YOUR NAME
-          </label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)}
+        <View style={styles.inputSection}>
+          <Text style={styles.label}>YOUR NAME</Text>
+
+          <TextInput
+            value={name}
+            onChangeText={setName}
             placeholder="Enter your name"
-            className="w-full rounded-2xl px-4 outline-none transition-all duration-200"
-            style={{
-              height: 56, background: "rgba(13,18,32,0.8)",
-              border: `1px solid ${name ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`,
-              color: "#EEF0FF", fontFamily: "var(--font-display)", fontSize: 16,
-              boxShadow: name ? "0 0 0 3px rgba(124,58,237,0.1)" : "none"
-            }} />
-        </div>
+            placeholderTextColor="#4A5568"
+            autoCapitalize="words"
+            style={[
+              styles.input,
+              {
+                borderColor: name
+                  ? "rgba(124,58,237,0.5)"
+                  : "rgba(124,58,237,0.2)",
 
-        {/* What name used for */}
-        <div className="flex items-start gap-3 p-4 rounded-2xl mb-8"
-          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-            <circle cx="12" cy="12" r="10" stroke="#A855F7" strokeWidth="1.8"/>
-            <path d="M12 8v4M12 16h.01" stroke="#A855F7" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "#8892B0", lineHeight: 1.5 }}>
-            VEXA will use your name to personalize responses and make conversations feel more natural.
-          </p>
-        </div>
+                shadowColor: "#7C3AED",
+                shadowOpacity: name ? 0.15 : 0,
+                shadowRadius: 6,
+              },
+            ]}
+          />
+        </View>
 
-        <button disabled={!isValid}
-          onClick={() => onNext("home", name.trim(), null)}
-          className="w-full rounded-2xl py-4 font-semibold transition-all duration-200"
-          style={{
-            fontFamily: "var(--font-display)", fontSize: 16,
-            background: isValid ? "linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)" : "rgba(124,58,237,0.15)",
-            color: isValid ? "#fff" : "#4A5568",
-            boxShadow: isValid ? "0 0 24px rgba(124,58,237,0.4)" : "none",
-            cursor: isValid ? "pointer" : "not-allowed"
-          }}>
-          Start Exploring
-        </button>
-      </div>
-    </div>
-  )
+        {/* Info box */}
+        <View style={styles.infoBox}>
+          <View style={styles.infoIcon}>
+            <Text style={styles.infoIconText}>i</Text>
+          </View>
+
+          <Text style={styles.infoText}>
+            VEXA will use your name to personalize responses and make
+            conversations feel more natural.
+          </Text>
+        </View>
+
+        {/* Start button */}
+        <Pressable
+          disabled={!isValid}
+          onPress={handleStart}
+          style={[
+            styles.startButton,
+            {
+              backgroundColor: isValid
+                ? "#7C3AED"
+                : "rgba(124,58,237,0.15)",
+
+              shadowColor: "#7C3AED",
+              shadowOpacity: isValid ? 0.45 : 0,
+              shadowRadius: 12,
+
+              opacity: isValid ? 1 : 0.7,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.startButtonText,
+              {
+                color: isValid ? "#FFFFFF" : "#4A5568",
+              },
+            ]}
+          >
+            Start Exploring
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#060912",
+    overflow: "hidden",
+  },
+
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 55,
+  },
+
+  topGlow: {
+    position: "absolute",
+    top: -50,
+    left: "50%",
+    marginLeft: -150,
+    width: 300,
+    height: 200,
+    borderRadius: 150,
+    backgroundColor: "rgba(124,58,237,0.12)",
+  },
+
+  header: {
+    marginBottom: 28,
+  },
+
+  title: {
+    color: "#EEF0FF",
+    fontSize: 28,
+    fontWeight: "700",
+    lineHeight: 34,
+  },
+
+  subtitle: {
+    marginTop: 8,
+    color: "#8892B0",
+    fontSize: 14,
+    lineHeight: 22,
+  },
+
+  avatarSection: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+
+  avatarPreviewContainer: {
+    position: "relative",
+    marginBottom: 22,
+  },
+
+  avatarPreview: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+
+    shadowOpacity: 0.45,
+    shadowRadius: 20,
+
+    elevation: 10,
+  },
+
+  avatarEmojiLarge: {
+    fontSize: 40,
+  },
+
+  editButton: {
+    position: "absolute",
+    right: -8,
+    bottom: -8,
+
+    width: 30,
+    height: 30,
+
+    borderRadius: 15,
+    backgroundColor: "#7C3AED",
+
+    borderWidth: 2,
+    borderColor: "#060912",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  editIcon: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  avatarOptions: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  avatarOption: {
+    width: 44,
+    height: 44,
+
+    borderRadius: 14,
+    borderWidth: 1.5,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatarEmoji: {
+    fontSize: 22,
+  },
+
+  inputSection: {
+    marginBottom: 18,
+  },
+
+  label: {
+    color: "#8892B0",
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+
+  input: {
+    height: 56,
+
+    borderRadius: 16,
+    borderWidth: 1,
+
+    backgroundColor: "rgba(13,18,32,0.8)",
+
+    paddingHorizontal: 16,
+
+    color: "#EEF0FF",
+    fontSize: 16,
+
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+
+    shadowRadius: 6,
+  },
+
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+
+    padding: 16,
+
+    borderRadius: 16,
+
+    backgroundColor: "rgba(124,58,237,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(124,58,237,0.15)",
+
+    marginBottom: 24,
+  },
+
+  infoIcon: {
+    width: 20,
+    height: 20,
+
+    borderRadius: 10,
+
+    borderWidth: 1.5,
+    borderColor: "#A855F7",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginRight: 10,
+    marginTop: 1,
+  },
+
+  infoIconText: {
+    color: "#A855F7",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+
+  infoText: {
+    flex: 1,
+
+    color: "#8892B0",
+    fontSize: 13,
+    lineHeight: 20,
+  },
+
+  startButton: {
+    height: 56,
+
+    borderRadius: 16,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    elevation: 8,
+  },
+
+  startButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
+
