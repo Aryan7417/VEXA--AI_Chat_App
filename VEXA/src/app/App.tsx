@@ -115,7 +115,9 @@ const DEMO_CONVERSATIONS: Conversation[] = [
 /* -------------------------------------------------------------------------- */
 
 const initialState: AppState = {
-  screen: "splash",
+  //screen: "splash",
+  screen: "home",
+
 
   prevScreen: null,
 
@@ -125,7 +127,8 @@ const initialState: AppState = {
 
   userAvatar: null,
 
-  conversations: DEMO_CONVERSATIONS,
+  // conversations: DEMO_CONVERSATIONS,
+  conversations: [],
 
   activeConversationId: null,
 
@@ -318,9 +321,9 @@ export default function App() {
           (conversation) =>
             conversation.id === conversationId
               ? {
-                  ...conversation,
-                  title: name,
-                }
+                ...conversation,
+                title: name,
+              }
               : conversation
         ),
     }));
@@ -343,16 +346,16 @@ export default function App() {
           (conversation) =>
             conversation.id === conversationId
               ? {
-                  ...conversation,
+                ...conversation,
 
-                  messages: [
-                    ...conversation.messages,
-                    message,
-                  ],
+                messages: [
+                  ...conversation.messages,
+                  message,
+                ],
 
-                  preview:
-                    message.content.slice(0, 60),
-                }
+                preview:
+                  message.content.slice(0, 60),
+              }
               : conversation
         ),
     }));

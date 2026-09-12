@@ -153,10 +153,117 @@ export default function ChatScreen({
     }, 100);
   }, [messages, streamText, isTyping]);
 
+  //--------AI responce
+const callOpenRouter = async (userMessage: string) => {
+  const apiKey = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY;
+
+  console.log("API KEY EXISTS:", !!apiKey);
+
+  if (!apiKey) {
+    throw new Error("OpenRouter API key missing");
+  }
+
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "openrouter/free",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are VEXA, a helpful AI assistant. Give clear, accurate and friendly answers.",
+          },
+          {
+            role: "user",
+            content: userMessage,
+          },
+        ],
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.log("OpenRouter Error:", data);
+    throw new Error(
+      data?.error?.message || "OpenRouter request failed"
+    );
+  }
+
+  return data.choices?.[0]?.message?.content || "No response received.";
+};
   /*
    * Send message
    */
-  const sendMessage = (text: string) => {
+  // const sendMessage = (text: string) => {
+  //   if (!text.trim() || isTyping) return;
+
+  //   const userMsg: Message = {
+  //     id: Date.now().toString(),
+  //     role: "user",
+  //     content: text.trim(),
+  //     timestamp: new Date(),
+  //   };
+
+  //   setMessages((prev) => [...prev, userMsg]);
+  //   setInput("");
+  //   setIsTyping(true);
+  //   setStreamText("");
+
+  //   /*
+  //    * Save user message to global App state
+  //    */
+  //   if (state.activeConversationId) {
+  //     onAddMessage(state.activeConversationId, userMsg);
+  //   }
+
+  //   const response =
+  //     AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)];
+
+  //   let i = 0;
+
+  //   const interval = setInterval(() => {
+  //     i++;
+
+  //     const currentText = response.slice(0, i * 3);
+  //     setStreamText(currentText);
+
+  //     if (i * 3 >= response.length) {
+  //       clearInterval(interval);
+
+  //       setIsTyping(false);
+  //       setStreamText("");
+
+  //       const aiMsg: Message = {
+  //         id: (Date.now() + 1).toString(),
+  //         role: "ai",
+  //         content: response,
+  //         timestamp: new Date(),
+  //       };
+
+  //       setMessages((prev) => [...prev, aiMsg]);
+
+  //       if (state.activeConversationId) {
+  //         onAddMessage(state.activeConversationId, aiMsg);
+  //       }
+  //     }
+  //   }
+  //   , 20);
+  // };
+  //------------------------------------------------------------------
+
+  //--------------------------------------------
+
+
+
+  const sendMessage = async (text: string) => {
     if (!text.trim() || isTyping) return;
 
     const userMsg: Message = {
@@ -171,45 +278,45 @@ export default function ChatScreen({
     setIsTyping(true);
     setStreamText("");
 
-    /*
-     * Save user message to global App state
-     */
     if (state.activeConversationId) {
       onAddMessage(state.activeConversationId, userMsg);
     }
 
-    const response =
-      AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)];
+    try {
+      const response = await callOpenRouter(text.trim());
 
-    let i = 0;
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        content: response,
+        timestamp: new Date(),
+      };
 
-    const interval = setInterval(() => {
-      i++;
+      setMessages((prev) => [...prev, aiMsg]);
 
-      const currentText = response.slice(0, i * 3);
-      setStreamText(currentText);
-
-      if (i * 3 >= response.length) {
-        clearInterval(interval);
-
-        setIsTyping(false);
-        setStreamText("");
-
-        const aiMsg: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "ai",
-          content: response,
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, aiMsg]);
-
-        if (state.activeConversationId) {
-          onAddMessage(state.activeConversationId, aiMsg);
-        }
+      if (state.activeConversationId) {
+        onAddMessage(state.activeConversationId, aiMsg);
       }
-    }, 20);
+    } catch (error) {
+      console.log("AI Error:", error);
+
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        content: "Sorry, I couldn't connect to the AI right now.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsTyping(false);
+      setStreamText("");
+    }
   };
+
+
+
+  //----------------------------------------------
 
   /*
    * Copy text
@@ -443,7 +550,7 @@ export default function ChatScreen({
                       style={[
                         styles.copyText,
                         copiedId === `code-${index}` &&
-                          styles.copiedText,
+                        styles.copiedText,
                       ]}
                     >
                       {copiedId === `code-${index}`
@@ -640,7 +747,7 @@ export default function ChatScreen({
                 style={[
                   styles.actionText,
                   copiedId === msg.id &&
-                    styles.copiedText,
+                  styles.copiedText,
                 ]}
               >
                 {copiedId === msg.id
@@ -785,7 +892,7 @@ export default function ChatScreen({
                   style={[
                     styles.modelOption,
                     state.model === model &&
-                      styles.selectedModel,
+                    styles.selectedModel,
                   ]}
                   onPress={() => {
                     setShowModel(false);
