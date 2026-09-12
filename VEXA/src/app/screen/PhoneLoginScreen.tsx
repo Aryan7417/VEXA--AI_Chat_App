@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSignUp } from "@clerk/expo";
 import { Screen } from "../../types";
 
 interface Props {
@@ -25,7 +26,7 @@ const countries = [
   { code: "+81", flag: "🇯🇵", name: "JP" },
   { code: "+86", flag: "🇨🇳", name: "CN" },
   { code: "+55", flag: "🇧🇷", name: "BR" },
-  { code: "+91", flag: "IN", name: "IND" },
+  { code: "+91", flag: "🇮🇳", name: "IND" },
 ];
 
 export default function PhoneLoginScreen({ onNext }: Props) {
@@ -33,14 +34,41 @@ export default function PhoneLoginScreen({ onNext }: Props) {
   const [phone, setPhone] = useState("");
   const [showCountries, setShowCountries] = useState(false);
 
+  const { signUp } = useSignUp();
+
   const isValid = phone.replace(/\D/g, "").length >= 7;
 
-  const handleContinue = () => {
-    if (!isValid) return;
 
-    onNext("otp", `${country.code} ${phone}`);
-  };
+const handleContinue = async () => {
+  if (!isValid) return;
 
+  try {
+    const phoneNumber = `${country.code}${phone.replace(/\D/g, "")}`;
+
+    const { error } = await signUp.create({
+      phoneNumber,
+    });
+
+    if (error) {
+      console.log("Clerk Create Error:", error);
+      return;
+    }
+
+    const { error: codeError } =
+      await signUp.verifications.sendPhoneCode();
+
+    if (codeError) {
+      console.log("OTP Send Error:", codeError);
+      return;
+    }
+
+    console.log("OTP sent successfully");
+
+    onNext("otp", phoneNumber);
+  } catch (error) {
+    console.log("Clerk OTP Error:", error);
+  }
+};
   return (
     <KeyboardAvoidingView
       style={styles.container}

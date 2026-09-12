@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "../../types";
+import { useSignUp } from "@clerk/expo";
+
 
 interface Props {
   phone: string;
@@ -36,6 +38,9 @@ export default function OTPScreen({
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState(false);
+  const { signUp } = useSignUp();
+  const [errorMessage, setErrorMessage] = useState("");
+
 
   const inputs = useRef<Array<TextInput | null>>([]);
 
@@ -96,39 +101,54 @@ export default function OTPScreen({
   };
 
   // Verify OTP
-  const handleVerify = (code: string) => {
-    if (verifying || verified) return;
+const handleVerify = async (code: string) => {
+  if (code.length !== 6 || verifying) return;
 
+  try {
     setVerifying(true);
     setError(false);
+    setErrorMessage("");
 
-    setTimeout(() => {
-      // Demo verification
-      // Production mein Firebase OTP verification yahan aayega.
-      if (code.length === 6) {
-        setVerified(true);
-        setVerifying(false);
+    const result = await signUp.verifications.verifyPhoneCode({
+      code,
+    });
 
-        setTimeout(() => {
-          onNext("profile-setup");
-        }, 900);
-      } else {
-        setError(true);
-        setVerifying(false);
+    console.log("OTP verification result:", result);
 
-        setOtp([
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-        ]);
+    if (result.error) {
+      setError(true);
+      setErrorMessage(result.error.message || "Incorrect OTP");
+      return;
+    }
 
-        inputs.current[0]?.focus();
-      }
-    }, 1200);
-  };
+    setVerified(true);
+
+    console.log("OTP verified successfully");
+    console.log("Signup status:", signUp.status);
+
+    if (signUp.status === "complete") {
+      await signUp.finalize();
+
+      onNext("create-profile");
+    } else {
+      // OTP verified but profile information is still required
+      onNext("create-profile");
+    }
+  } catch (error: any) {
+    console.log("OTP verification error:", error);
+
+    setError(true);
+    setErrorMessage(
+      error?.errors?.[0]?.message ||
+      error?.message ||
+      "Invalid OTP. Please try again."
+    );
+  } finally {
+    setVerifying(false);
+  }
+};
+
+
 
   const filled = otp.join("").length;
 

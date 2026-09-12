@@ -4,6 +4,7 @@ export type Screen =
   | 'login'
   | 'otp'
   | 'profile-setup'
+  | "create-profile"
   | 'home'
   | 'chat'
   | 'chats'

@@ -27,6 +27,7 @@ const avatarEmojis = ["🧑", "👩", "🧔", "👨‍💻", "👩‍💻", "�
 
 export default function CreateProfileScreen({ onNext }: Props) {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(0);
 
   const isValid = name.trim().length >= 2;
@@ -151,6 +152,32 @@ export default function CreateProfileScreen({ onNext }: Props) {
             ]}
           />
         </View>
+
+          <View style={styles.inputSection}>
+          <Text style={styles.label}>YOUR NAME</Text>
+
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            placeholderTextColor="#4A5568"
+            autoCapitalize="words"
+            style={[
+              styles.input,
+              {
+                borderColor: name
+                  ? "rgba(124,58,237,0.5)"
+                  : "rgba(124,58,237,0.2)",
+
+                shadowColor: "#7C3AED",
+                shadowOpacity: name ? 0.15 : 0,
+                shadowRadius: 6,
+              },
+            ]}
+          />
+        </View>
+
+        
 
         {/* Info box */}
         <View style={styles.infoBox}>
