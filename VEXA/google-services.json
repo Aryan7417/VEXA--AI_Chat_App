@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "496375268938",
+    "project_id": "vexa-422e9",
+    "storage_bucket": "vexa-422e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496375268938:android:c046bcacdc8bc1ca2ac8b3",
+        "android_client_info": {
+          "package_name": "com.aryan_code.VEXA"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAra6p5VRjSBWCyD5wNwn1C7L8W2XfxsGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496375268938:android:915ddb2b4b34edf12ac8b3",
+        "android_client_info": {
+          "package_name": "com.vexa.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAra6p5VRjSBWCyD5wNwn1C7L8W2XfxsGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

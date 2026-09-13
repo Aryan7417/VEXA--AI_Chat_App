@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "../../types";
-import { useSignUp } from "@clerk/expo";
+//import { useSignUp } from "@clerk/expo";
 
 
 interface Props {

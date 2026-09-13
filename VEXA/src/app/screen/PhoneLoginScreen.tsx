@@ -10,8 +10,9 @@ import {
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSignUp } from "@clerk/expo";
+//import { useSignUp } from "@clerk/expo";
 import { Screen } from "../../types";
+import { getAuth, signInWithPhoneNumber } from "@react-native-firebase/auth";
 
 interface Props {
   onNext: (screen: Screen, phone?: string) => void;
@@ -33,40 +34,36 @@ export default function PhoneLoginScreen({ onNext }: Props) {
   const [country, setCountry] = useState(countries[2]);
   const [phone, setPhone] = useState("");
   const [showCountries, setShowCountries] = useState(false);
+  const auth = getAuth();
 
-  const { signUp } = useSignUp();
+  //const { signUp } = useSignUp();
 
   const isValid = phone.replace(/\D/g, "").length >= 7;
+
 
 
 const handleContinue = async () => {
   if (!isValid) return;
 
   try {
-    const phoneNumber = `${country.code}${phone.replace(/\D/g, "")}`;
+    const phoneNumber =
+      `${country.code}${phone.replace(/\D/g, "")}`;
 
-    const { error } = await signUp.create({
-      phoneNumber,
-    });
+    console.log("Sending OTP to:", phoneNumber);
 
-    if (error) {
-      console.log("Clerk Create Error:", error);
-      return;
-    }
+    const auth = getAuth();
 
-    const { error: codeError } =
-      await signUp.verifications.sendPhoneCode();
-
-    if (codeError) {
-      console.log("OTP Send Error:", codeError);
-      return;
-    }
+    const confirmation = await signInWithPhoneNumber(
+      auth,
+      phoneNumber
+    );
 
     console.log("OTP sent successfully");
 
     onNext("otp", phoneNumber);
+
   } catch (error) {
-    console.log("Clerk OTP Error:", error);
+    console.log("Firebase OTP Error:", error);
   }
 };
   return (

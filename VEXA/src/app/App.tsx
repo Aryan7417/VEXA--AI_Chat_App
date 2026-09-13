@@ -115,8 +115,8 @@ const DEMO_CONVERSATIONS: Conversation[] = [
 /* -------------------------------------------------------------------------- */
 
 const initialState: AppState = {
-  //screen: "splash",
-  screen: "home",
+  screen: "splash",
+  // screen: "home",
 
 
   prevScreen: null,
