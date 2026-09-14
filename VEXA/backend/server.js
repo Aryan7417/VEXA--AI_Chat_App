@@ -38,10 +38,80 @@ app.post("/api/auth/send-otp", async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"VEXA" <${process.env.EMAIL_USER}>`,
+      from: `"VEXA 💌" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Your VEXA Verification Code",
-      text: `Your VEXA verification code is ${otp}. It expires in 5 minutes.`,
+      subject: "💌 VEXA ne tumhare liye kuch bheja hai 👀",
+
+      html: `
+    <div style="
+      background:#060912;
+      padding:40px 20px;
+      font-family:Arial,sans-serif;
+      color:#EEF0FF;
+      text-align:center;
+    ">
+
+      <h1 style="color:#A855F7;">
+        Hey cutie 👀❤️
+      </h1>
+
+      <p style="font-size:16px;color:#8892B0;">
+        VEXA ne tumhare liye ek secret code bheja hai:
+      </p>
+
+      <div style="
+        display:inline-block;
+        background:#0D1220;
+        border:1px solid #7C3AED;
+        border-radius:16px;
+        padding:20px 35px;
+        margin:20px 0;
+      ">
+        <div style="
+          color:#8892B0;
+          font-size:12px;
+          margin-bottom:8px;
+        ">
+          YOUR OTP
+        </div>
+
+        <div style="
+          color:#A855F7;
+          font-size:32px;
+          font-weight:bold;
+          letter-spacing:8px;
+        ">
+          ${otp}
+        </div>
+      </div>
+
+      <p style="color:#8892B0;">
+        ⏳ 5 minutes tak valid hai...
+      </p>
+
+      <p style="color:#EEF0FF;font-size:15px;">
+        Bilkul meri feelings ki tarah,<br>
+        bas thodi zyada urgent hain 😂
+      </p>
+
+      <p style="color:#EEF0FF;">
+        Code enter karo aur VEXA mein entry le lo. 💜
+      </p>
+
+      <p style="color:#8892B0;">
+        OTP share mat karna...
+      </p>
+
+      <p style="color:#A855F7;font-weight:bold;">
+        Dil chalega, OTP nahi. 😭❤️
+      </p>
+
+      <p style="color:#8892B0;margin-top:30px;">
+        — Team VEXA 💌
+      </p>
+
+    </div>
+  `,
     });
 
     console.log(`OTP sent to ${email}: ${otp}`);

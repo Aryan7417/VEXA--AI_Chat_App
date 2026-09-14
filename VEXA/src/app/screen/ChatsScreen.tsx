@@ -59,39 +59,7 @@ export default function ChatsScreen({
     );
   }, [search, state.conversations]);
 
-  // const formatDate = (date: string | number | Date) => {
-  //   const messageDate = new Date(date)
-  //   const now = new Date()
-
-  //   if (isNaN(messageDate.getTime())) {
-  //     return ""
-  //   }
-
-  //   const diff = Math.max(0, now.getTime() - messageDate.getTime())
-
-  //   if (diff < 60_000) {
-  //     return "Just now"
-  //   }
-
-  //   if (diff < 3_600_000) {
-  //     return `${Math.floor(diff / 60_000)}m ago`
-  //   }
-
-  //   if (diff < 86_400_000) {
-  //     return `${Math.floor(diff / 3_600_000)}h ago`
-  //   }
-
-  //   if (diff < 604_800_000) {
-  //     return `${Math.floor(diff / 86_400_000)}d ago`
-  //   }
-
-  //   return messageDate.toLocaleDateString("en-IN", {
-  //     day: "numeric",
-  //     month: "short",
-  //     year: "numeric",
-  //   })
-  // }
-
+ 
 
   const formatDate = (date: string | number | Date) => {
     let messageDate: Date

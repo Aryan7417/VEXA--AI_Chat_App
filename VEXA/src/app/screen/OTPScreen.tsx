@@ -11,17 +11,19 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Screen } from "../../types";
-//import { useSignUp } from "@clerk/expo";
+
 
 
 interface Props {
   phone: string;
+  method: "phone" | "email";
   onNext: (screen: Screen) => void;
   onBack: () => void;
 }
 
 export default function OTPScreen({
   phone,
+  method,
   onNext,
   onBack,
 }: Props) {
@@ -38,7 +40,8 @@ export default function OTPScreen({
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState(false);
-  const { signUp } = useSignUp();
+  const [confirmation, setConfirmation] = useState<any>(null);
+
   const [errorMessage, setErrorMessage] = useState("");
 
 
@@ -109,45 +112,68 @@ const handleVerify = async (code: string) => {
     setError(false);
     setErrorMessage("");
 
-    const result = await signUp.verifications.verifyPhoneCode({
-      code,
-    });
+    console.log("Verifying OTP:", code);
+    console.log("Method:", method);
+    console.log("Email/Phone:", phone);
 
-    console.log("OTP verification result:", result);
+    // EMAIL OTP
+    if (method === "email") {
+      const response = await fetch(
+        "http://172.16.50.215:3000/api/auth/verify-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: phone,
+            otp: code.trim(),
+          }),
+        }
+      );
 
-    if (result.error) {
-      setError(true);
-      setErrorMessage(result.error.message || "Incorrect OTP");
+      const result = await response.json();
+
+      console.log("Backend verify response:", result);
+
+      if (!response.ok || !result.success) {
+        setError(true);
+        setErrorMessage(result.message || "Invalid OTP");
+        return;
+      }
+
+      setVerified(true);
+
+      console.log("✅ Email OTP verified successfully");
+
+      setTimeout(() => {
+        onNext("profile-setup");
+      }, 500);
+
       return;
     }
 
-    setVerified(true);
-
-    console.log("OTP verified successfully");
-    console.log("Signup status:", signUp.status);
-
-    if (signUp.status === "complete") {
-      await signUp.finalize();
-
-      onNext("create-profile");
-    } else {
-      // OTP verified but profile information is still required
-      onNext("create-profile");
+    // PHONE OTP
+    // Isko abhi baad mein Firebase confirmation ke saath connect karenge.
+    if (method === "phone") {
+      setError(true);
+      setErrorMessage(
+        "Phone verification is not configured yet."
+      );
     }
+
   } catch (error: any) {
     console.log("OTP verification error:", error);
 
     setError(true);
+
     setErrorMessage(
-      error?.errors?.[0]?.message ||
-      error?.message ||
-      "Invalid OTP. Please try again."
+      error?.message || "Invalid OTP. Please try again."
     );
   } finally {
     setVerifying(false);
   }
 };
-
 
 
   const filled = otp.join("").length;

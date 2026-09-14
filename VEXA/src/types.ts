@@ -42,8 +42,16 @@ export interface AppState {
   conversations: Conversation[]
   activeConversationId: string | null
   model: Model
-  theme: 'dark' | 'darker'
+  theme: 'midnight' | 'obsidian' | 'nebula' | 'violet'
   language: string
   notifications: boolean
   streamingMessages: boolean
+}
+
+export interface AppState {
+  screen: Screen
+  prevScreen: Screen | null
+  phone: string
+  authMethod: 'phone' | 'email'
+  userName: string
 }

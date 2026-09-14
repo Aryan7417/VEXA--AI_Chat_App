@@ -116,12 +116,14 @@ const DEMO_CONVERSATIONS: Conversation[] = [
 
 const initialState: AppState = {
   screen: "splash",
-  // screen: "home",
+  //screen: 'settings',
+  //screen: "home",
 
 
   prevScreen: null,
 
   phone: "",
+  authMethod: "email",
 
   userName: "",
 
@@ -156,6 +158,8 @@ export default function App() {
     useState<string | undefined>(undefined);
 
 
+
+
   /* ---------------------------------------------------------------------- */
   /*                              NAVIGATION                                */
   /* ---------------------------------------------------------------------- */
@@ -186,15 +190,14 @@ export default function App() {
 
   const handleLoginNext = (
     screen: Screen,
-    phone?: string
+    phone?: string,
+    method?: "phone" | "email"
   ) => {
     setState((prev) => ({
       ...prev,
-
       ...(phone ? { phone } : {}),
-
+      ...(method ? { authMethod: method } : {}),
       prevScreen: prev.screen,
-
       screen,
     }));
   };
@@ -438,6 +441,7 @@ export default function App() {
         return (
           <OTPScreen
             phone={state.phone}
+            method={state.authMethod}
             onNext={navigate}
             onBack={() => navigate("login")}
           />
